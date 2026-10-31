@@ -47,6 +47,7 @@
             },
             "development": {
               "optimization": false,
+              "outputHashing": "all",
               "extractLicenses": false,
               "sourceMap": true,
               "fileReplacements": [

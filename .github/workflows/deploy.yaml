@@ -108,7 +108,7 @@ jobs:
           echo "Deploying to gs://${GCS_BUCKET}"
 
           ssh "${SERVER_USER}@${SERVER_HOST}" \
-            "gcloud storage rsync --recursive --delete-unmatched-destination-objects '${REMOTE_DIR}/' 'gs://${GCS_BUCKET}'"
+            "gcloud storage rsync --recursive --checksums-only --delete-unmatched-destination-objects '${REMOTE_DIR}/' 'gs://${GCS_BUCKET}'"
 
       # 12. Configurar políticas de caché
       - name: Configure cache policies
