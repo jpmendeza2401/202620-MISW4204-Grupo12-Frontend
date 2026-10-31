@@ -1,0 +1,117 @@
+name: Deploy Frontend
+
+on:
+  push:
+    branches:
+      - dev
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: frontend-deploy-${{ github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Build and Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Descargar el repositorio
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. Configurar Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # 3. Instalar dependencias
+      - name: Install dependencies
+        run: npm ci
+
+      # 4. Ejecutar pruebas
+      - name: Run tests
+        run: npm test -- --watch=false
+
+      # 5. Seleccionar ambiente según la rama
+      - name: Select environment
+        shell: bash
+        run: |
+          if [[ "${GITHUB_REF_NAME}" == "dev" ]]; then
+            echo "BUILD_CONFIGURATION=development" >> "$GITHUB_ENV"
+            echo "TARGET_ENV=dev" >> "$GITHUB_ENV"
+            echo "GCS_BUCKET=app-seguimiento-front-dev" >> "$GITHUB_ENV"
+          elif [[ "${GITHUB_REF_NAME}" == "main" ]]; then
+            echo "BUILD_CONFIGURATION=production" >> "$GITHUB_ENV"
+            echo "TARGET_ENV=prod" >> "$GITHUB_ENV"
+            echo "GCS_BUCKET=app-seguimiento-front-prod" >> "$GITHUB_ENV"
+          else
+            echo "Unsupported branch"
+            exit 1
+          fi
+
+      # 6. Compilar Angular
+      - name: Build Angular
+        run: npm run build -- --configuration $BUILD_CONFIGURATION
+
+      # 7. Configurar autenticación SSH
+      - name: Configure SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SERVER_SSH_KEY }}
+
+      # 8. Agregar servidor a known_hosts
+      - name: Add server to known hosts
+        shell: bash
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H "${{ secrets.SERVER_HOST }}" >> ~/.ssh/known_hosts
+
+      # 9. Preparar directorio remoto
+      - name: Prepare remote directory
+        shell: bash
+        env:
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+        run: |
+          REMOTE_DIR="/home/${SERVER_USER}/frontend_deploy/${TARGET_ENV}"
+
+          ssh "${SERVER_USER}@${SERVER_HOST}" \
+            "mkdir -p '${REMOTE_DIR}'"
+
+          echo "REMOTE_DIR=${REMOTE_DIR}" >> "$GITHUB_ENV"
+
+      # 10. Copiar compilación a Ubuntu
+      - name: Copy frontend to server
+        shell: bash
+        env:
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+        run: |
+          rsync -az --delete \
+            dist/frontend-app/browser/ \
+            "${SERVER_USER}@${SERVER_HOST}:${REMOTE_DIR}/"
+
+      # 11. Publicar en Google Cloud Storage
+      - name: Deploy to Google Cloud Storage
+        shell: bash
+        env:
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+        run: |
+          echo "Deploying to gs://${GCS_BUCKET}"
+
+          ssh "${SERVER_USER}@${SERVER_HOST}" \
+            "gcloud storage rsync --recursive --delete-unmatched-destination-objects '${REMOTE_DIR}/' 'gs://${GCS_BUCKET}'"
+
+      # 12. Finalizar
+      - name: Deployment completed
+        run: |
+          echo "Frontend deployed successfully"
+          echo "Environment: ${TARGET_ENV}"
+          echo "Bucket: gs://${GCS_BUCKET}"
