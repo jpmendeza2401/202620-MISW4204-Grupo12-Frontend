@@ -1,0 +1,7 @@
+<app-sidebar [abierto]="menuAbierto()" (cerrar)="menuAbierto.set(false)" />
+<div class="min-h-screen">
+  <app-header (alternarMenu)="alternarMenu()" />
+  <main class="pt-20 px-4 sm:px-8 pb-8">
+    <router-outlet />
+  </main>
+</div>

@@ -1,0 +1,42 @@
+@if (abierto()) {
+  <div class="fixed inset-0 bg-carbon-900/40 z-40" (click)="cerrar.emit()"></div>
+}
+
+<aside
+  class="fixed left-0 top-0 h-full w-64 bg-white border-r border-border-ui shadow-sm z-50 flex flex-col transition-transform duration-200"
+  [class.-translate-x-full]="!abierto()"
+>
+  <div class="h-20 px-6 flex items-center gap-3 border-b border-border-ui/60">
+    <div
+      class="w-10 h-10 rounded-xl bg-academic-blue flex items-center justify-center text-white shadow-sm ring-4 ring-academic-blue/10"
+    >
+      <span class="material-symbols-outlined text-[24px]">school</span>
+    </div>
+    <div class="flex flex-col">
+      <span class="font-bold text-lg text-academic-blue leading-tight tracking-tight">
+        CampusDocente
+      </span>
+      <span class="text-[0.6875rem] font-semibold text-slate-var uppercase tracking-wider mt-0.5">
+        Portal Académico
+      </span>
+    </div>
+  </div>
+
+  <div class="px-6 pt-6 pb-2">
+    <span class="text-[0.6875rem] font-bold uppercase tracking-wider text-slate-var-muted">
+      Navegación Principal
+    </span>
+  </div>
+
+  <nav class="flex flex-col gap-1.5 px-3">
+    <a
+      routerLink="/crear-periodo"
+      routerLinkActive="bg-academic-blue text-white font-semibold shadow-sm"
+      class="flex items-center gap-3 px-3.5 py-2.5 text-slate-var font-medium text-sm rounded-xl transition-colors"
+      (click)="cerrar.emit()"
+    >
+      <span class="material-symbols-outlined text-[20px]">calendar_month</span>
+      <span>Crear periodo</span>
+    </a>
+  </nav>
+</aside>
