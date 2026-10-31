@@ -1,0 +1,324 @@
+
+<main class="main-content">
+  <div class="content-container">
+
+    <!-- Encabezado -->
+    <section class="page-header">
+      <div>
+        <nav class="breadcrumb">
+          <a routerLink="/espacios">Espacios académicos</a>
+          <span>/</span>
+          <span>Vinculaciones</span>
+        </nav>
+
+        <h1>Vinculaciones académicas</h1>
+        <p>
+          Consulta y administra las vinculaciones asociadas
+          a este espacio académico.
+        </p>
+      </div>
+
+      <a routerLink="/espacios" class="btn-back">
+        <span>←</span>
+        Volver a espacios
+      </a>
+    </section>
+
+    <!-- Identificación del espacio -->
+    <section class="space-card">
+      <div class="space-info">
+        <div class="space-icon">▦</div>
+
+        <div>
+          <span class="eyebrow">Espacio académico</span>
+          <h2>Espacio #{{ espacioId }}</h2>
+          <p>Administración de personal vinculado</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Error -->
+    @if (error) {
+      <div class="alert-error">
+        {{ error }}
+      </div>
+    }
+
+    <!-- Indicadores -->
+    <section class="metrics-grid">
+
+      <article class="metric-card">
+        <div class="metric-icon blue">
+          <span>♙</span>
+        </div>
+        <div>
+          <span>Total vinculaciones</span>
+          <strong>{{ vinculaciones.length }}</strong>
+        </div>
+      </article>
+
+      <article class="metric-card">
+        <div class="metric-icon purple">
+          <span>♟</span>
+        </div>
+        <div>
+          <span>Monitores</span>
+          <strong>{{ totalMonitores }}</strong>
+        </div>
+      </article>
+
+      <article class="metric-card">
+        <div class="metric-icon amber">
+          <span>◆</span>
+        </div>
+        <div>
+          <span>Asistentes graduados</span>
+          <strong>{{ totalAsistentes }}</strong>
+        </div>
+      </article>
+
+      <article class="metric-card">
+        <div class="metric-icon green">
+          <span>◷</span>
+        </div>
+        <div>
+          <span>Horas contratadas</span>
+          <strong>{{ totalHoras }}</strong>
+        </div>
+      </article>
+
+    </section>
+
+    <!-- Personal vinculado -->
+    <section class="personal-card">
+
+      <div class="personal-header">
+        <div>
+          <h2>Personal vinculado</h2>
+          <p>Personas asignadas a este espacio académico.</p>
+        </div>
+
+        <button
+          type="button"
+          class="btn-new"
+          (click)="abrirFormulario()">
+          <span>＋</span>
+          Nueva vinculación
+        </button>
+      </div>
+
+      <!-- Cargando -->
+      @if (cargando) {
+        <div class="empty-state">
+          <div class="spinner"></div>
+          <p>Consultando vinculaciones...</p>
+        </div>
+      }
+
+      <!-- Sin vinculaciones -->
+      @else if (vinculaciones.length === 0) {
+        <div class="empty-state">
+
+          <div class="empty-icon">
+            <span>♙</span>
+          </div>
+
+          <h3>Aún no hay vinculaciones</h3>
+
+          <p>
+            Este espacio académico todavía no tiene personas
+            vinculadas.
+          </p>
+
+          <button
+            type="button"
+            class="btn-primary"
+            (click)="abrirFormulario()">
+            <span>＋</span>
+            Asignar monitor o asistente
+          </button>
+
+        </div>
+      }
+
+      <!-- Listado de vinculaciones -->
+      @else {
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Usuario</th>
+                <th>Rol operativo</th>
+                <th>Horas contratadas</th>
+                <th>Fecha de vinculación</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              @for (v of vinculaciones; track v.id) {
+                <tr>
+                  <td>#{{ v.id }}</td>
+                  <td>{{ v.usuario_id }}</td>
+                  <td>
+                    <span class="role-badge">
+                      {{ v.rol_operativo === 'monitor'
+                        ? 'Monitor'
+                        : 'Asistente graduado' }}
+                    </span>
+                  </td>
+                  <td>{{ v.horas_contratadas }} horas</td>
+                  <td>{{ v.fecha_creacion }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+
+    </section>
+
+    <!-- Preparación del formulario -->
+    
+<!-- Formulario de nueva vinculación -->
+@if (mostrarFormulario) {
+  <section class="form-card">
+
+    <div class="form-header">
+      <div>
+        <h2>Nueva vinculación</h2>
+        <p>
+          Registra un monitor o asistente graduado
+          en este espacio académico.
+        </p>
+      </div>
+
+      <button
+        type="button"
+        class="btn-close"
+        (click)="cerrarFormulario()">
+        ✕
+      </button>
+    </div>
+
+    <form
+      #formVinculacion="ngForm"
+      (ngSubmit)="crearVinculacion()">
+
+      <div class="form-grid">
+
+        <!-- Usuario -->
+        <div class="form-field">
+          <label for="usuario_id">
+            Identificador del usuario
+            <span class="required">*</span>
+          </label>
+
+          <input
+            id="usuario_id"
+            type="number"
+            name="usuario_id"
+            [(ngModel)]="nuevaVinculacion.usuario_id"
+            placeholder="Ej. 25"
+            min="1"
+            required>
+
+          <small>
+            Ingresa el ID del usuario que deseas vincular.
+          </small>
+        </div>
+
+        <!-- Rol -->
+        <div class="form-field">
+          <label for="rol_operativo">
+            Rol operativo
+            <span class="required">*</span>
+          </label>
+
+          <select
+            id="rol_operativo"
+            name="rol_operativo"
+            [(ngModel)]="nuevaVinculacion.rol_operativo"
+            required>
+
+            <option value="monitor">Monitor</option>
+            <option value="asistente_graduado">
+              Asistente graduado
+            </option>
+
+          </select>
+
+          <small>
+            Selecciona el rol que tendrá el usuario.
+          </small>
+        </div>
+
+        <!-- Horas -->
+        <div class="form-field">
+          <label for="horas_contratadas">
+            Horas contratadas
+            <span class="required">*</span>
+          </label>
+
+          <input
+            id="horas_contratadas"
+            type="number"
+            name="horas_contratadas"
+            [(ngModel)]="nuevaVinculacion.horas_contratadas"
+            placeholder="Ej. 10"
+            min="1"
+            step="1"
+            required>
+
+          <small>
+            Número de horas asignadas al usuario.
+          </small>
+        </div>
+
+      </div>
+
+      <!-- Información del espacio -->
+      <div class="form-information">
+        <span>Espacio académico:</span>
+        <strong>#{{ espacioId }}</strong>
+      </div>
+
+      @if (error) {
+        <div class="alert-error">
+          {{ error }}
+        </div>
+      }
+
+      @if (mensaje) {
+        <div class="alert-success">
+          {{ mensaje }}
+        </div>
+      }
+
+      <!-- Acciones -->
+      <div class="form-actions">
+
+        <button
+          type="button"
+          class="btn-cancel"
+          (click)="cerrarFormulario()">
+          Cancelar
+        </button>
+
+        <button
+          type="submit"
+          class="btn-primary"
+          [disabled]="formVinculacion.invalid">
+          Validar datos
+        </button>
+
+      </div>
+
+    </form>
+
+  </section>
+}
+
+
+  </div>
+</main>
