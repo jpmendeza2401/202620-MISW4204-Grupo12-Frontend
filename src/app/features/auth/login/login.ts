@@ -1,3 +1,4 @@
+
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -18,6 +19,9 @@ export class Login {
   protected readonly cargando = signal(false);
   protected readonly error = signal<string | null>(null);
 
+  protected readonly rolSeleccionado = signal<'monitor' | 'profesor'>('monitor');
+  protected readonly passwordVisible = signal(false);
+
   protected readonly form = this.fb.nonNullable.group({
     login: ['', Validators.required],
     password: ['', Validators.required],
@@ -28,10 +32,43 @@ export class Login {
       this.form.markAllAsTouched();
       return;
     }
+
     this.cargando.set(true);
     this.error.set(null);
+
     this.auth.login(this.form.getRawValue()).subscribe({
-      next: () => this.router.navigate(['/crear-periodo']),
+      next: (res) => {
+        this.auth.listarRolesUsuario(res.usuario.id).subscribe({
+          next: (roles) => {
+            const rolesPermitidos: Record<string, string[]> = {
+              monitor: ['monitor', 'asistente_graduado'],
+              profesor: ['profesor'],
+            };
+
+            const rolesUsuario = roles.map((rol) =>
+              rol.nombre.toLowerCase(),
+            );
+
+            const tieneRol = rolesPermitidos[
+              this.rolSeleccionado()
+            ].some((rol) => rolesUsuario.includes(rol));
+
+            if (!tieneRol) {
+              this.cargando.set(false);
+              this.error.set(
+                'No tienes permisos para ingresar con el rol seleccionado',
+              );
+              return;
+            }
+
+            this.router.navigate(['/crear-periodo']);
+          },
+          error: () => {
+            this.cargando.set(false);
+            this.error.set('No fue posible validar los roles del usuario');
+          },
+        });
+      },
       error: (err: HttpErrorResponse) => {
         this.cargando.set(false);
         this.error.set(

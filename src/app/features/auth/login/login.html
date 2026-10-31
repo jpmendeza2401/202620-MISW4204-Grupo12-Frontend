@@ -1,47 +1,235 @@
-<main class="min-h-screen flex items-center justify-center px-4 bg-canvas">
-  <form
-    class="w-full max-w-sm bg-white border border-border-ui rounded-2xl shadow-sm p-8 flex flex-col gap-5"
-    [formGroup]="form"
-    (ngSubmit)="entrar()"
-  >
-    <h1 class="text-xl font-bold text-academic-blue">CampusDocente</h1>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<main class="min-h-screen flex items-center justify-center px-4 py-6 bg-surface font-body-md text-on-surface">
+  <div class="w-full max-w-md flex flex-col gap-6">
 
-    <div class="flex flex-col gap-2">
-      <label class="text-xs font-bold uppercase tracking-wider text-carbon-900" for="login">
-        Correo o identificador
-      </label>
-      <input
-        id="login"
-        type="text"
-        formControlName="login"
-        autocomplete="username"
-        class="w-full bg-slate-50 border border-border-ui px-4 py-2.5 rounded-xl text-sm outline-none focus:bg-white focus:border-academic-blue focus:ring-2 focus:ring-academic-blue/15"
-      />
+    <div class="flex flex-col items-center text-center gap-3">
+
+      <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container-high text-primary shadow-sm">
+        <span class="material-symbols-outlined text-base">verified</span>
+        <span class="text-xs font-bold uppercase tracking-wide">
+          Portal Académico Oficial
+        </span>
+      </div>
+
+      <div class="flex items-center justify-center w-20 h-20 rounded-2xl bg-white shadow-md p-2">
+        <img
+          alt="Praxis Académica Logo"
+          class="w-full h-full object-contain"
+          src="assets/images/logo.png"
+        />
+      </div>
+
+      <div class="space-y-1">
+        <h1 class="text-2xl font-bold tracking-tight">
+          Praxis Académica
+        </h1>
+
+        <p class="text-sm text-on-surface-variant max-w-xs mx-auto">
+          Seguimiento ágil de labores, horas y avances semanales sin burocracia.
+        </p>
+      </div>
     </div>
 
-    <div class="flex flex-col gap-2">
-      <label class="text-xs font-bold uppercase tracking-wider text-carbon-900" for="password">
-        Contraseña
-      </label>
-      <input
-        id="password"
-        type="password"
-        formControlName="password"
-        autocomplete="current-password"
-        class="w-full bg-slate-50 border border-border-ui px-4 py-2.5 rounded-xl text-sm outline-none focus:bg-white focus:border-academic-blue focus:ring-2 focus:ring-academic-blue/15"
-      />
+    <div class="w-full bg-surface-container p-1 rounded-2xl flex items-center shadow-sm">
+
+      <button
+        type="button"
+        (click)="rolSeleccionado.set('monitor')"
+        [class]="rolSeleccionado() === 'monitor'
+          ? 'flex-1 flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-xl bg-white text-primary shadow-sm'
+          : 'flex-1 flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-xl text-on-surface-variant'"
+      >
+        <span
+          class="w-2 h-2 rounded-full"
+          [class.bg-secondary]="rolSeleccionado() === 'monitor'"
+        ></span>
+        <span class="text-xs sm:text-sm font-semibold">
+          Monitor / Asistente
+        </span>
+      </button>
+
+      <button
+        type="button"
+        (click)="rolSeleccionado.set('profesor')"
+        [class]="rolSeleccionado() === 'profesor'
+          ? 'flex-1 flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-xl bg-white text-primary shadow-sm'
+          : 'flex-1 flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-xl text-on-surface-variant'"
+      >
+        <span
+          class="w-2 h-2 rounded-full"
+          [class.bg-primary]="rolSeleccionado() === 'profesor'"
+        ></span>
+        <span class="text-xs sm:text-sm font-semibold">
+          Profesor
+        </span>
+      </button>
     </div>
 
-    @if (error(); as msg) {
-      <p class="text-sm text-red-600" role="alert">{{ msg }}</p>
-    }
+    <div class="flex items-center gap-2.5 p-3 rounded-xl bg-surface-container-low text-on-surface-variant shadow-sm">
 
-    <button
-      type="submit"
-      [disabled]="cargando()"
-      class="px-6 py-2.5 rounded-xl bg-academic-blue hover:bg-academic-blue-dark text-white font-semibold text-sm shadow-sm transition-all disabled:opacity-60"
+      <div class="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
+        [class.bg-secondary/15]="rolSeleccionado() === 'monitor'"
+        [class.bg-primary/15]="rolSeleccionado() === 'profesor'"
+      >
+        <span class="material-symbols-outlined text-lg"
+          [class.text-secondary]="rolSeleccionado() === 'monitor'"
+          [class.text-primary]="rolSeleccionado() === 'profesor'"
+        >
+          {{ rolSeleccionado() === 'monitor' ? 'pending_actions' : 'fact_check' }}
+        </span>
+      </div>
+
+      @if (rolSeleccionado() === 'monitor') {
+        <p class="text-xs">
+          Espacio de <strong class="text-on-surface">bitácora</strong>
+          de horas cursadas.
+        </p>
+      } @else {
+        <p class="text-xs">
+          Panel de <strong class="text-on-surface">revisión y reporte semanal</strong>
+          de avances semanales.
+        </p>
+      }
+    </div>
+
+    <form
+      class="flex flex-col gap-4"
+      [formGroup]="form"
+      (ngSubmit)="entrar()"
     >
-      {{ cargando() ? 'Ingresando...' : 'Ingresar' }}
-    </button>
-  </form>
+
+      <div class="flex flex-col gap-1.5">
+        <label
+          for="login"
+          class="text-xs font-semibold text-on-surface"
+        >
+          Correo institucional o identificador
+        </label>
+
+        <div class="relative flex items-center">
+          <span class="material-symbols-outlined absolute left-3.5 text-outline pointer-events-none">
+            school
+          </span>
+
+          <input
+            id="login"
+            type="text"
+            formControlName="login"
+            autocomplete="username"
+            placeholder="tu.usuario@universidad.edu"
+            class="w-full h-12 pl-11 pr-4 rounded-xl bg-white border border-outline-variant text-sm shadow-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 transition-all"
+          />
+        </div>
+      </div>
+
+      <div class="flex flex-col gap-1.5">
+        <label
+          for="password"
+          class="text-xs font-semibold text-on-surface"
+        >
+          Contraseña
+        </label>
+
+        <div class="relative flex items-center">
+          <span class="material-symbols-outlined absolute left-3.5 text-outline pointer-events-none">
+            lock
+          </span>
+
+          <input
+            id="password"
+            [type]="passwordVisible() ? 'text' : 'password'"
+            formControlName="password"
+            autocomplete="current-password"
+            placeholder="••••••••••••"
+            class="w-full h-12 pl-11 pr-12 rounded-xl bg-white border border-outline-variant text-sm shadow-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 transition-all"
+          />
+
+          <button
+            type="button"
+            (click)="passwordVisible.set(!passwordVisible())"
+            aria-label="Mostrar u ocultar contraseña"
+            class="absolute right-3.5 flex items-center justify-center text-outline hover:text-on-surface p-1"
+          >
+            <span class="material-symbols-outlined text-xl">
+              {{ passwordVisible() ? 'visibility_off' : 'visibility' }}
+            </span>
+          </button>
+        </div>
+      </div>
+      @if (error(); as msg) {
+        <p class="text-sm text-red-600" role="alert">
+          {{ msg }}
+        </p>
+      }
+
+      <button
+      class="w-full h-12 mt-2 rounded-xl bg-primary text-on-primary font-label-lg text-label-lg flex items-center justify-center gap-2 shadow-md hover:bg-primary-container active:scale-[0.99] transition-all duration-150 cursor-pointer"
+        type="submit"
+        [disabled]="cargando()"
+        >
+        <span>
+          {{ cargando() ? 'Ingresando...' : 'Ingresar a mi espacio' }}
+        </span>
+
+        @if (!cargando()) {
+          <span class="material-symbols-outlined text-xl">
+            arrow_forward
+          </span>
+        } @else {
+          <span class="material-symbols-outlined animate-spin">
+            progress_activity
+          </span>
+        }
+      </button>
+
+    </form>
+
+    <div class="p-3.5 rounded-xl bg-white shadow-sm flex items-start gap-3">
+      <div class="p-1 rounded-full bg-secondary-fixed text-on-secondary-fixed shrink-0">
+        <span class="material-symbols-outlined text-base">help</span>
+      </div>
+
+      <div class="space-y-0.5">
+        <h3 class="text-xs font-semibold text-on-surface">
+          ¿Primer semestre como monitor?
+        </h3>
+
+        <p class="text-xs text-on-surface-variant leading-relaxed">
+          Tu docente titular o secretaría académica debe haber vinculado
+          tu registro previamente para habilitar tu cuenta.
+        </p>
+      </div>
+    </div>
+
+    <footer class="pt-2 flex flex-col items-center gap-2 text-center">
+
+      <div class="flex items-center gap-3 flex-wrap justify-center">
+        <a routerLink="/ayuda" class="text-xs text-outline hover:text-on-surface">
+          Mesa de Ayuda
+        </a>
+
+        <span class="text-outline/40">•</span>
+
+        <a routerLink="/terminos" class="text-xs text-outline hover:text-on-surface">
+          Términos de Uso
+        </a>
+
+        <span class="text-outline/40">•</span>
+
+        <a routerLink="/privacidad" class="text-xs text-outline hover:text-on-surface">
+          Privacidad Académica
+        </a>
+      </div>
+
+      <p class="text-xs text-outline/80">
+        Sistema Integrado de Acompañamiento Docente © 2026
+      </p>
+
+    </footer>
+
+  </div>
 </main>
