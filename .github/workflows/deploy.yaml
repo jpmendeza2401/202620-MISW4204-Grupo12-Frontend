@@ -57,7 +57,7 @@ jobs:
 
       # 6. Compilar Angular
       - name: Build Angular
-        run: npm run build -- --configuration $BUILD_CONFIGURATION
+        run: npm run build -- --configuration $BUILD_CONFIGURATION --base-href "/${GCS_BUCKET}/"
 
       # 7. Configurar autenticación SSH
       - name: Configure SSH
