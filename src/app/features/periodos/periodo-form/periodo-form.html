@@ -1,0 +1,131 @@
+<div class="max-w-3xl mx-auto">
+  <div class="flex items-center gap-3 mb-2">
+    <div class="w-1.5 h-7 bg-academic-blue rounded-full"></div>
+    <h1 class="text-2xl font-bold text-carbon-900 tracking-tight">Nuevo Periodo Académico</h1>
+  </div>
+  <p class="text-sm text-slate-var mb-6">
+    Define las fechas clave y la disponibilidad del periodo lectivo.
+  </p>
+
+  <section class="bg-white rounded-2xl border border-border-ui shadow-sm p-6">
+    <h2 class="text-lg font-bold text-carbon-900 mb-5">Parámetros del Ciclo Lectivo</h2>
+
+    <form class="flex flex-col gap-6" [formGroup]="form" (ngSubmit)="guardar()">
+      <div class="flex flex-col gap-2">
+        <div class="flex items-center justify-between">
+          <label class="text-xs font-bold text-carbon-900 uppercase tracking-wider" for="codigo">
+            Código del Periodo <span class="text-red-600">*</span>
+          </label>
+          <span class="text-xs text-slate-var font-medium">Máximo 40 caracteres</span>
+        </div>
+        <input
+          id="codigo"
+          type="text"
+          formControlName="codigo"
+          placeholder="ej. 2025-1 o 2025-SEM-A"
+          class="w-full bg-slate-50 border border-border-ui px-4 py-2.5 rounded-xl text-sm font-semibold tabular-nums outline-none transition-all focus:bg-white focus:border-academic-blue focus:ring-2 focus:ring-academic-blue/15 placeholder:text-slate-var-muted"
+        />
+        @if (invalido('codigo')) {
+          <p class="text-xs text-red-600">El código es obligatorio (máximo 40 caracteres).</p>
+        }
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        <div class="flex flex-col gap-2">
+          <label
+            class="text-xs font-bold text-carbon-900 uppercase tracking-wider"
+            for="fecha_inicio"
+          >
+            Fecha de Inicio <span class="text-red-600">*</span>
+          </label>
+          <input
+            id="fecha_inicio"
+            type="date"
+            formControlName="fecha_inicio"
+            class="w-full bg-slate-50 border border-border-ui px-4 py-2.5 rounded-xl text-sm font-semibold tabular-nums outline-none transition-all focus:bg-white focus:border-academic-blue focus:ring-2 focus:ring-academic-blue/15"
+          />
+          @if (invalido('fecha_inicio')) {
+            <p class="text-xs text-red-600">La fecha de inicio es obligatoria.</p>
+          }
+        </div>
+
+        <div class="flex flex-col gap-2">
+          <label class="text-xs font-bold text-carbon-900 uppercase tracking-wider" for="fecha_fin">
+            Fecha de Finalización <span class="text-red-600">*</span>
+          </label>
+          <input
+            id="fecha_fin"
+            type="date"
+            formControlName="fecha_fin"
+            class="w-full bg-slate-50 border border-border-ui px-4 py-2.5 rounded-xl text-sm font-semibold tabular-nums outline-none transition-all focus:bg-white focus:border-academic-blue focus:ring-2 focus:ring-academic-blue/15"
+          />
+          @if (invalido('fecha_fin')) {
+            <p class="text-xs text-red-600">La fecha de finalización es obligatoria.</p>
+          }
+        </div>
+      </div>
+
+      @if (form.hasError('fechaFinAnterior')) {
+        <p class="text-xs text-red-600">La fecha de fin no puede ser anterior a la de inicio.</p>
+      }
+
+      <div class="rounded-xl bg-slate-50 border border-border-ui p-4 flex items-center justify-between">
+        <span class="text-xs font-bold uppercase tracking-wider text-slate-var">Duración</span>
+        <span class="text-sm font-bold text-academic-blue tabular-nums">
+          {{ semanas() !== null ? semanas() + ' semanas lectivas' : '—' }}
+        </span>
+      </div>
+
+      <div class="flex items-center justify-between gap-4">
+        <div class="flex flex-col">
+          <label class="text-sm font-bold text-carbon-900" for="habilitado">
+            Habilitado para la comunidad docente
+          </label>
+          <span class="text-xs text-slate-var">
+            {{
+              form.controls.habilitado.value
+                ? 'Activo e inmediatamente visible'
+                : 'Oculto / acceso restringido'
+            }}
+          </span>
+        </div>
+        <label class="relative inline-flex items-center cursor-pointer shrink-0">
+          <input id="habilitado" type="checkbox" formControlName="habilitado" class="sr-only peer" />
+          <div
+            class="w-12 h-6 bg-slate-300 rounded-full peer peer-checked:bg-academic-blue peer-checked:after:translate-x-6 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"
+          ></div>
+        </label>
+      </div>
+
+      @if (exito(); as msg) {
+        <p
+          class="text-sm font-semibold text-operational-teal-deep bg-operational-teal-tint rounded-xl px-4 py-3"
+          role="status"
+        >
+          {{ msg }}
+        </p>
+      }
+      @if (error(); as msg) {
+        <p class="text-sm text-red-700 bg-red-50 rounded-xl px-4 py-3" role="alert">{{ msg }}</p>
+      }
+
+      <div class="flex items-center gap-3 pt-4 border-t border-border-ui">
+        <button
+          type="submit"
+          [disabled]="guardando()"
+          class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-academic-blue hover:bg-academic-blue-dark text-white font-semibold text-sm shadow-sm transition-all focus:ring-4 focus:ring-academic-blue/20 disabled:opacity-60"
+        >
+          <span class="material-symbols-outlined text-[18px]">check_circle</span>
+          <span>{{ guardando() ? 'Guardando...' : 'Guardar Periodo' }}</span>
+        </button>
+        <button
+          type="button"
+          class="px-4 py-2.5 text-slate-var hover:text-red-600 font-semibold text-sm"
+          (click)="cancelar()"
+        >
+          Cancelar
+        </button>
+      </div>
+    </form>
+  </section>
+</div>

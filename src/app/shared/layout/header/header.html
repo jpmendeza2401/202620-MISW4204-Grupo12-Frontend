@@ -1,0 +1,19 @@
+<header
+  class="fixed top-0 left-0 right-0 h-16 bg-white/95 backdrop-blur-md border-b border-border-ui shadow-sm z-30 flex items-center justify-between px-4 sm:px-8"
+>
+  <button
+    type="button"
+    aria-label="Abrir menú"
+    class="w-9 h-9 rounded-xl flex items-center justify-center text-slate-var hover:bg-slate-100 hover:text-carbon-900 transition-colors"
+    (click)="alternarMenu.emit()"
+  >
+    <span class="material-symbols-outlined text-[22px]">menu</span>
+  </button>
+
+  @if (usuario(); as u) {
+    <div class="flex flex-col text-right">
+      <span class="font-bold text-xs text-carbon-900 leading-tight">{{ u.nombre }}</span>
+      <span class="text-[11px] font-medium text-slate-var leading-tight">{{ u.correo }}</span>
+    </div>
+  }
+</header>

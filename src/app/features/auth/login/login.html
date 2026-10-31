@@ -1,0 +1,47 @@
+<main class="min-h-screen flex items-center justify-center px-4 bg-canvas">
+  <form
+    class="w-full max-w-sm bg-white border border-border-ui rounded-2xl shadow-sm p-8 flex flex-col gap-5"
+    [formGroup]="form"
+    (ngSubmit)="entrar()"
+  >
+    <h1 class="text-xl font-bold text-academic-blue">CampusDocente</h1>
+
+    <div class="flex flex-col gap-2">
+      <label class="text-xs font-bold uppercase tracking-wider text-carbon-900" for="login">
+        Correo o identificador
+      </label>
+      <input
+        id="login"
+        type="text"
+        formControlName="login"
+        autocomplete="username"
+        class="w-full bg-slate-50 border border-border-ui px-4 py-2.5 rounded-xl text-sm outline-none focus:bg-white focus:border-academic-blue focus:ring-2 focus:ring-academic-blue/15"
+      />
+    </div>
+
+    <div class="flex flex-col gap-2">
+      <label class="text-xs font-bold uppercase tracking-wider text-carbon-900" for="password">
+        Contraseña
+      </label>
+      <input
+        id="password"
+        type="password"
+        formControlName="password"
+        autocomplete="current-password"
+        class="w-full bg-slate-50 border border-border-ui px-4 py-2.5 rounded-xl text-sm outline-none focus:bg-white focus:border-academic-blue focus:ring-2 focus:ring-academic-blue/15"
+      />
+    </div>
+
+    @if (error(); as msg) {
+      <p class="text-sm text-red-600" role="alert">{{ msg }}</p>
+    }
+
+    <button
+      type="submit"
+      [disabled]="cargando()"
+      class="px-6 py-2.5 rounded-xl bg-academic-blue hover:bg-academic-blue-dark text-white font-semibold text-sm shadow-sm transition-all disabled:opacity-60"
+    >
+      {{ cargando() ? 'Ingresando...' : 'Ingresar' }}
+    </button>
+  </form>
+</main>

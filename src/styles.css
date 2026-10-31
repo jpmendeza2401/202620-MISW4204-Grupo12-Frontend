@@ -1,3 +1,41 @@
-/* You can add global styles to this file, and also import other style files */
-
 @import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Plus Jakarta Sans', sans-serif;
+
+  --color-academic-blue: #00288e;
+  --color-academic-blue-dark: #001d6e;
+  --color-academic-blue-light: #1e40af;
+  --color-academic-blue-tint: #eef2ff;
+
+  --color-operational-teal: #006a61;
+  --color-operational-teal-active: #0d9488;
+  --color-operational-teal-tint: #ccfbf1;
+  --color-operational-teal-deep: #0f766e;
+
+  --color-carbon-900: #0f172a;
+  --color-carbon-800: #131b2e;
+  --color-carbon-600: #334155;
+
+  --color-slate-var: #475569;
+  --color-slate-var-light: #64748b;
+  --color-slate-var-muted: #94a3b8;
+
+  --color-canvas: #f8fafc;
+  --color-border-ui: #e2e8f0;
+}
+
+html,
+body {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background-color: #f8fafc;
+  color: #0f172a;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
