@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
+import { provideRouter } from '@angular/router';
 import { VinculacionesComponent } from './vinculaciones.component';
 
 describe('VinculacionesComponent', () => {
@@ -8,10 +8,12 @@ describe('VinculacionesComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [VinculacionesComponent]
-    })
-    .compileComponents();
-    
+      imports: [VinculacionesComponent],
+      providers: [
+        provideRouter([])
+      ]
+    }).compileComponents();
+
     fixture = TestBed.createComponent(VinculacionesComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
