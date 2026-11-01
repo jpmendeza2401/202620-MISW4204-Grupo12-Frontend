@@ -23,5 +23,10 @@ export const routes: Routes = [
       { path: '', pathMatch: 'full', redirectTo: 'crear-periodo' },
     ],
   },
+  {
+    path: 'register',
+    loadComponent: () =>
+      import('./features/user/create/create.component').then(m => m.CreateComponent),
+  },
   { path: '**', redirectTo: '' },
 ];
