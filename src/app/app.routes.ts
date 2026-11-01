@@ -20,6 +20,11 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/periodos/periodo-form/periodo-form').then((m) => m.PeriodoForm),
       },
+      {
+        path: 'reportes',
+        loadComponent: () =>
+          import('./features/reportes/reportes/reportes').then((m) => m.Reportes),
+      },
       { path: '', pathMatch: 'full', redirectTo: 'crear-periodo' },
       {
         path: 'usuarios/:id',
