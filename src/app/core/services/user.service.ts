@@ -26,7 +26,14 @@ export interface AsignarRolRequest {
 export interface AsignarRolResponse {
   [key: string]: unknown;
 }
+export interface RolUsuario {
+  id: number;
+  nombre: string;
+}
 
+export interface UsuarioConRoles extends UsuarioResponse {
+  roles: RolUsuario[];
+}
 export class AsignacionRolError extends Error {
   constructor(
     public readonly usuarioCreado: UsuarioResponse,
@@ -95,6 +102,18 @@ export class UsuarioService {
           ])
         )
       )
+    );
+  }
+  listarUsuarios(): Observable<UsuarioResponse[]> {
+    return this.http.get<UsuarioResponse[]>(this.apiUrl, {
+      headers: this.obtenerHeaders()
+    });
+  }
+
+  listarRolesUsuario(usuarioId: string): Observable<RolUsuario[]> {
+    return this.http.get<RolUsuario[]>(
+      `${this.apiUrl}/${usuarioId}/roles`,
+      { headers: this.obtenerHeaders() }
     );
   }
 }
