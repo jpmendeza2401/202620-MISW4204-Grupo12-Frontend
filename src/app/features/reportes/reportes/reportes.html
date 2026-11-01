@@ -1,0 +1,325 @@
+<ng-template #tablaTareas let-lista>
+  @if (lista.length === 0) {
+    <p class="text-sm text-slate-var px-4 py-6 text-center">No hay tareas para mostrar.</p>
+  } @else {
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm text-left">
+        <thead class="text-xs uppercase tracking-wider text-slate-var bg-slate-50">
+          <tr>
+            <th class="px-4 py-2.5">Tarea</th>
+            @if (lista[0].usuario_nombre !== undefined) {
+              <th class="px-4 py-2.5">Persona</th>
+            }
+            @if (lista[0].espacio_nombre !== undefined) {
+              <th class="px-4 py-2.5">Espacio</th>
+            }
+            @if (lista[0].periodo_codigo !== undefined) {
+              <th class="px-4 py-2.5">Periodo</th>
+            }
+            <th class="px-4 py-2.5">Semana</th>
+            <th class="px-4 py-2.5 text-right">Horas</th>
+            <th class="px-4 py-2.5">Estado</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-border-ui">
+          @for (t of lista; track t.tarea_id) {
+            <tr class="align-top">
+              <td class="px-4 py-3 min-w-56">
+                <div class="font-semibold text-carbon-900">{{ t.titulo }}</div>
+                @if (t.descripcion) {
+                  <div class="text-xs text-slate-var mt-0.5">{{ t.descripcion }}</div>
+                }
+                @if (t.observaciones) {
+                  <div class="text-xs text-slate-var-muted mt-0.5 italic">{{ t.observaciones }}</div>
+                }
+              </td>
+              @if (lista[0].usuario_nombre !== undefined) {
+                <td class="px-4 py-3">
+                  {{ t.usuario_nombre }}
+                  <div class="text-xs text-slate-var">{{ t.rol_operativo }}</div>
+                </td>
+              }
+              @if (lista[0].espacio_nombre !== undefined) {
+                <td class="px-4 py-3">{{ t.espacio_nombre }}</td>
+              }
+              @if (lista[0].periodo_codigo !== undefined) {
+                <td class="px-4 py-3">{{ t.periodo_codigo }}</td>
+              }
+              <td class="px-4 py-3 whitespace-nowrap tabular-nums">
+                {{ t.semana_inicio }} – {{ t.semana_fin }}
+              </td>
+              <td class="px-4 py-3 text-right tabular-nums font-semibold">
+                {{ t.horas_invertidas }}
+              </td>
+              <td class="px-4 py-3 whitespace-nowrap">
+                <span
+                  class="inline-block px-2 py-0.5 rounded-full text-xs font-semibold"
+                  [class]="claseEstado(t.estado)"
+                  >{{ t.estado }}</span
+                >
+                @if (t.es_tardia) {
+                  <span
+                    class="inline-block ml-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700"
+                    >Tardía</span
+                  >
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</ng-template>
+
+<div class="max-w-6xl mx-auto">
+  <div class="flex items-center gap-3 mb-2">
+    <div class="w-1.5 h-7 bg-academic-blue rounded-full"></div>
+    <h1 class="text-2xl font-bold text-carbon-900 tracking-tight">Reportes</h1>
+  </div>
+  <p class="text-sm text-slate-var mb-6">Selecciona un reporte y consulta su información.</p>
+
+  <section class="bg-white rounded-2xl border border-border-ui shadow-sm p-6 mb-6">
+    <form class="flex flex-col gap-5" (submit)="$event.preventDefault(); consultar()">
+      <div class="flex flex-col gap-2">
+        <label class="text-xs font-bold text-carbon-900 uppercase tracking-wider" for="reporte">
+          Reporte
+        </label>
+        <select
+          id="reporte"
+          class="w-full bg-slate-50 border border-border-ui px-4 py-2.5 rounded-xl text-sm font-semibold outline-none focus:bg-white focus:border-academic-blue focus:ring-2 focus:ring-academic-blue/15"
+          [value]="seleccionado()"
+          (change)="seleccionar($any($event.target).value)"
+        >
+          <option value="">Selecciona un reporte…</option>
+          @for (r of reportes; track r.id) {
+            <option [value]="r.id">{{ r.nombre }}</option>
+          }
+        </select>
+        @if (definicion(); as d) {
+          <p class="text-xs text-slate-var">{{ d.descripcion }}</p>
+        }
+      </div>
+
+      @if (filtrosVisibles().length) {
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+          @for (f of filtrosVisibles(); track f.filtro) {
+            <div class="flex flex-col gap-2">
+              <label
+                class="text-xs font-bold text-carbon-900 uppercase tracking-wider"
+                [for]="'f-' + f.filtro"
+              >
+                {{ nombreFiltro(f.filtro) }}
+                @if (f.requerido) {
+                  <span class="text-red-600">*</span>
+                } @else {
+                  <span class="text-slate-var-muted normal-case font-medium">(opcional)</span>
+                }
+              </label>
+              <select
+                [id]="'f-' + f.filtro"
+                class="w-full bg-slate-50 border border-border-ui px-4 py-2.5 rounded-xl text-sm font-semibold outline-none focus:bg-white focus:border-academic-blue focus:ring-2 focus:ring-academic-blue/15"
+                [value]="filtros()[f.filtro]"
+                (change)="cambiarFiltro(f.filtro, $any($event.target).value)"
+              >
+                <option value="">{{ f.requerido ? 'Selecciona…' : 'Todos' }}</option>
+                @for (o of opciones()[f.filtro]; track o.valor) {
+                  <option [value]="o.valor">{{ o.texto }}</option>
+                }
+              </select>
+            </div>
+          }
+        </div>
+      }
+
+      <div class="flex items-center gap-3 pt-4 border-t border-border-ui">
+        <button
+          type="submit"
+          [disabled]="!puedeConsultar()"
+          class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-academic-blue hover:bg-academic-blue-dark text-white font-semibold text-sm shadow-sm transition-all focus:ring-4 focus:ring-academic-blue/20 disabled:opacity-60"
+        >
+          <span class="material-symbols-outlined text-[18px]">search</span>
+          <span>{{ cargando() ? 'Consultando...' : 'Consultar' }}</span>
+        </button>
+      </div>
+    </form>
+  </section>
+
+  @if (error(); as msg) {
+    <p class="text-sm text-red-700 bg-red-50 rounded-xl px-4 py-3" role="alert">{{ msg }}</p>
+  }
+
+  @if (resultado(); as r) {
+    <section class="bg-white rounded-2xl border border-border-ui shadow-sm p-6">
+      @if (r.id === 'personas-vinculadas') {
+        @if (r.data.length === 0) {
+          <p class="text-sm text-slate-var text-center py-6">No hay personas vinculadas.</p>
+        } @else {
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm text-left">
+              <thead class="text-xs uppercase tracking-wider text-slate-var bg-slate-50">
+                <tr>
+                  <th class="px-4 py-2.5">Persona</th>
+                  <th class="px-4 py-2.5">Rol</th>
+                  <th class="px-4 py-2.5">Espacio</th>
+                  <th class="px-4 py-2.5">Periodo</th>
+                  <th class="px-4 py-2.5 text-right">Horas contratadas</th>
+                  <th class="px-4 py-2.5 text-right">Tareas</th>
+                  <th class="px-4 py-2.5 text-right">Horas invertidas</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-border-ui">
+                @for (p of r.data; track p.vinculacion_id) {
+                  <tr>
+                    <td class="px-4 py-3">
+                      <div class="font-semibold text-carbon-900">{{ p.nombre }}</div>
+                      <div class="text-xs text-slate-var">{{ p.correo }} · {{ p.identificador }}</div>
+                    </td>
+                    <td class="px-4 py-3">{{ p.rol_operativo }}</td>
+                    <td class="px-4 py-3">
+                      {{ p.espacio_nombre }}
+                      <div class="text-xs text-slate-var">{{ p.espacio_tipo }} · {{ p.espacio_estado }}</div>
+                    </td>
+                    <td class="px-4 py-3">{{ p.periodo_codigo }}</td>
+                    <td class="px-4 py-3 text-right tabular-nums">{{ p.horas_contratadas }}</td>
+                    <td class="px-4 py-3 text-right tabular-nums">{{ p.total_tareas }}</td>
+                    <td class="px-4 py-3 text-right tabular-nums">{{ p.horas_invertidas_total }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      }
+
+      @if (r.id === 'vinculaciones-persona') {
+        <h2 class="text-lg font-bold text-carbon-900">{{ r.data.nombre }}</h2>
+        <p class="text-xs text-slate-var mb-4">{{ r.data.correo }} · {{ r.data.identificador }}</p>
+        @if (!r.data.vinculaciones?.length) {
+          <p class="text-sm text-slate-var text-center py-6">Sin vinculaciones.</p>
+        } @else {
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm text-left">
+              <thead class="text-xs uppercase tracking-wider text-slate-var bg-slate-50">
+                <tr>
+                  <th class="px-4 py-2.5">Espacio</th>
+                  <th class="px-4 py-2.5">Tipo</th>
+                  <th class="px-4 py-2.5">Estado</th>
+                  <th class="px-4 py-2.5">Periodo</th>
+                  <th class="px-4 py-2.5">Rol</th>
+                  <th class="px-4 py-2.5 text-right">Horas contratadas</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-border-ui">
+                @for (v of r.data.vinculaciones; track v.vinculacion_id) {
+                  <tr>
+                    <td class="px-4 py-3 font-semibold text-carbon-900">{{ v.espacio_nombre }}</td>
+                    <td class="px-4 py-3">{{ v.espacio_tipo }}</td>
+                    <td class="px-4 py-3">{{ v.espacio_estado }}</td>
+                    <td class="px-4 py-3">{{ v.periodo_codigo }}</td>
+                    <td class="px-4 py-3">{{ v.rol_operativo }}</td>
+                    <td class="px-4 py-3 text-right tabular-nums">{{ v.horas_contratadas }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      }
+
+      @if (r.id === 'tareas-espacio') {
+        <h2 class="text-lg font-bold text-carbon-900">{{ r.data.espacio_nombre }}</h2>
+        <p class="text-xs text-slate-var mb-4">
+          {{ r.data.espacio_tipo }} · {{ r.data.espacio_estado }} · Periodo
+          {{ r.data.periodo_codigo }}
+        </p>
+        <ng-container
+          *ngTemplateOutlet="tablaTareas; context: { $implicit: tareas(r.data.tareas) }"
+        />
+      }
+
+      @if (r.id === 'trabajo-consolidado') {
+        @if (r.data.length === 0) {
+          <p class="text-sm text-slate-var text-center py-6">Sin información de trabajo.</p>
+        }
+        @for (p of r.data; track p.usuario_id) {
+          <div class="mb-8 last:mb-0">
+            <div class="flex flex-wrap items-baseline justify-between gap-2 mb-2">
+              <div>
+                <h2 class="text-lg font-bold text-carbon-900">{{ p.nombre }}</h2>
+                <p class="text-xs text-slate-var">{{ p.correo }} · {{ p.identificador }}</p>
+              </div>
+              <div class="text-sm font-bold text-academic-blue tabular-nums">
+                {{ p.total_tareas }} tareas · {{ p.total_horas }} h
+              </div>
+            </div>
+            <ng-container
+              *ngTemplateOutlet="tablaTareas; context: { $implicit: tareas(p.tareas) }"
+            />
+          </div>
+        }
+      }
+
+      @if (r.id === 'tareas-reportadas') {
+        <ng-container *ngTemplateOutlet="tablaTareas; context: { $implicit: r.data }" />
+      }
+
+      @if (r.id === 'vinculaciones-propias') {
+        <h2 class="text-lg font-bold text-carbon-900 mb-4">{{ r.data.nombre }}</h2>
+        @if (!r.data.vinculaciones?.length) {
+          <p class="text-sm text-slate-var text-center py-6">Sin vinculaciones.</p>
+        } @else {
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm text-left">
+              <thead class="text-xs uppercase tracking-wider text-slate-var bg-slate-50">
+                <tr>
+                  <th class="px-4 py-2.5">Espacio</th>
+                  <th class="px-4 py-2.5">Tipo</th>
+                  <th class="px-4 py-2.5">Rol</th>
+                  <th class="px-4 py-2.5 text-right">Horas contratadas</th>
+                  <th class="px-4 py-2.5">Creada</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-border-ui">
+                @for (v of r.data.vinculaciones; track v.vinculacion_id) {
+                  <tr>
+                    <td class="px-4 py-3 font-semibold text-carbon-900">{{ v.espacio_nombre }}</td>
+                    <td class="px-4 py-3">{{ v.espacio_tipo }}</td>
+                    <td class="px-4 py-3">{{ v.rol_operativo }}</td>
+                    <td class="px-4 py-3 text-right tabular-nums">{{ v.horas_contratadas }}</td>
+                    <td class="px-4 py-3 tabular-nums">{{ v.fecha_creacion }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      }
+
+      @if (r.id === 'tareas-propias') {
+        <ng-container *ngTemplateOutlet="tablaTareas; context: { $implicit: r.data }" />
+      }
+
+      @if (r.id === 'historial') {
+        @if (r.data.length === 0) {
+          <p class="text-sm text-slate-var text-center py-6">Sin historial.</p>
+        }
+        @for (s of r.data; track s.semana_inicio) {
+          <div class="mb-8 last:mb-0">
+            <div class="flex flex-wrap items-baseline justify-between gap-2 mb-2">
+              <h2 class="text-base font-bold text-carbon-900 tabular-nums">
+                Semana {{ s.semana_inicio }} – {{ s.semana_fin }}
+              </h2>
+              <div class="text-sm font-bold text-academic-blue tabular-nums">
+                {{ s.total_tareas }} tareas · {{ s.horas_invertidas }} h
+              </div>
+            </div>
+            <ng-container
+              *ngTemplateOutlet="tablaTareas; context: { $implicit: tareas(s.tareas) }"
+            />
+          </div>
+        }
+      }
+    </section>
+  }
+</div>
