@@ -1,7 +1,6 @@
 
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 import {UsuarioService, AsignacionRolError} from '../../../core/services/user.service';
 
@@ -9,7 +8,7 @@ type RolInstitucional = 'monitor' | 'asistente_graduado' | 'profesor';
 
 @Component({
   selector: 'app-create',
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule],
   templateUrl: './create.component.html',
 })
 export class CreateComponent {
