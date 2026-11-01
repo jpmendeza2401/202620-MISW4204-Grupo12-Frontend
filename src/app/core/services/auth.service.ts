@@ -33,7 +33,11 @@ export class AuthService {
         }),
       );
   }
-
+  listarRolesUsuario(id: string) {
+    return this.http.get<any[]>(
+      `${environment.apiUrl}/usuarios/${id}/roles`,
+    );
+  }
   logout(): void {
     this._token.set(null);
     this._usuario.set(null);
