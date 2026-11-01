@@ -270,10 +270,15 @@
               <span class="font-body-sm text-body-sm text-outline">
                 Usuario institucional
               </span>
-
-              <span class="material-symbols-outlined text-primary text-[20px]">
-                chevron_right
-              </span>
+              <a
+                [routerLink]="['/usuarios', usuario.id]"
+                class="text-primary hover:underline font-label-md text-label-md">
+                Ver detalle
+                <span class="material-symbols-outlined text-primary text-[20px]">
+                  chevron_right
+                </span>
+              </a>
+              
             </div>
 
           </article>

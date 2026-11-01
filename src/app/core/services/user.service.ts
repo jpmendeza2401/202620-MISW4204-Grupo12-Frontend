@@ -34,6 +34,24 @@ export interface RolUsuario {
 export interface UsuarioConRoles extends UsuarioResponse {
   roles: RolUsuario[];
 }
+export interface UsuarioResponse {
+  id: string;
+  nombre: string;
+  correo: string;
+  identificador: string;
+  creado_en: string;
+}
+
+export interface RolUsuario {
+  id: number;
+  nombre: string;
+}
+
+export interface ActualizarUsuarioRequest {
+  nombre: string;
+  correo: string;
+  identificador: string;
+}
 export class AsignacionRolError extends Error {
   constructor(
     public readonly usuarioCreado: UsuarioResponse,
@@ -113,6 +131,30 @@ export class UsuarioService {
   listarRolesUsuario(usuarioId: string): Observable<RolUsuario[]> {
     return this.http.get<RolUsuario[]>(
       `${this.apiUrl}/${usuarioId}/roles`,
+      { headers: this.obtenerHeaders() }
+    );
+  }
+  obtenerUsuario(id: string): Observable<UsuarioResponse> {
+    return this.http.get<UsuarioResponse>(
+      `${this.apiUrl}/${id}`,
+      { headers: this.obtenerHeaders() }
+    );
+  }
+
+  actualizarUsuario(
+    id: string,
+    datos: ActualizarUsuarioRequest
+  ): Observable<UsuarioResponse> {
+    return this.http.put<UsuarioResponse>(
+      `${this.apiUrl}/${id}`,
+      datos,
+      { headers: this.obtenerHeaders() }
+    );
+  }
+
+  desasignarRol(usuarioId: string, rolId: number): Observable<void> {
+    return this.http.delete<void>(
+      `${this.apiUrl}/${usuarioId}/roles/${rolId}`,
       { headers: this.obtenerHeaders() }
     );
   }
