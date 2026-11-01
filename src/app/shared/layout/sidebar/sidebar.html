@@ -1,3 +1,7 @@
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
 @if (abierto()) {
   <div class="fixed inset-0 bg-carbon-900/40 z-40" (click)="cerrar.emit()"></div>
 }
@@ -31,7 +35,7 @@
   <nav class="flex flex-col gap-1.5 px-3">
     <a
       routerLink="/crear-periodo"
-      routerLinkActive="bg-academic-blue text-white font-semibold shadow-sm"
+      routerLinkActive="bg-primary text-white font-semibold shadow-sm"
       class="flex items-center gap-3 px-3.5 py-2.5 text-slate-var font-medium text-sm rounded-xl transition-colors"
       (click)="cerrar.emit()"
     >
@@ -40,12 +44,21 @@
     </a>
     <a
       routerLink="/reportes"
-      routerLinkActive="bg-academic-blue text-white font-semibold shadow-sm"
+      routerLinkActive="bg-primary text-white font-semibold shadow-sm"
       class="flex items-center gap-3 px-3.5 py-2.5 text-slate-var font-medium text-sm rounded-xl transition-colors"
       (click)="cerrar.emit()"
     >
       <span class="material-symbols-outlined text-[20px]">bar_chart</span>
       <span>Reportes</span>
+    </a>
+    <a
+      routerLink="/usuarios"
+      routerLinkActive="bg-primary text-white font-semibold shadow-sm"
+      class="flex items-center gap-3 px-3.5 py-2.5 text-slate-var font-medium text-sm rounded-xl transition-colors"
+      (click)="cerrar.emit()"
+    >
+      <span class="material-symbols-outlined text-[20px]">person</span>
+      <span>Usuarios</span>
     </a>
   </nav>
 </aside>
