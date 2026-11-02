@@ -8,6 +8,12 @@ import {
   Vinculacion,
   CrearVinculacionRequest
 } from '../../services/vinculaciones.service';
+import { UsuarioResponse, UsuarioService } from '../../core/services/user.service';
+
+// import {
+//   UsuarioService,
+//   UsuarioResponse
+// } from '../../services/usuario.service';
 
 @Component({
   selector: 'app-vinculaciones',
@@ -32,7 +38,10 @@ export class VinculacionesComponent implements OnInit {
   mensaje = '';
   mostrarFormulario = false;
 
+private readonly usuarioService = inject(UsuarioService);
 
+usuarios: UsuarioResponse[] = [];
+cargandoUsuarios = false;
   
   nuevaVinculacion = {
     usuario_id: '',
@@ -41,21 +50,22 @@ export class VinculacionesComponent implements OnInit {
   };
 
   ngOnInit(): void {
-    this.route.paramMap.subscribe(params => {
-      const id = params.get('id');
+  this.route.paramMap.subscribe(params => {
+    const id = params.get('id');
 
-      if (!id || !id.trim()) {
-        this.espacioId = null;
-        this.error = 'El identificador del espacio académico no es válido.';
-        return;
-      }
+    if (!id || !id.trim()) {
+      this.espacioId = null;
+      this.error = 'El identificador del espacio académico no es válido.';
+      return;
+    }
 
-      this.espacioId = id;
-      this.error = '';
+    this.espacioId = id;
+    this.error = '';
 
-      this.listarVinculaciones();
-    });
-  }
+    this.listarVinculaciones();
+    this.listarUsuarios();
+  });
+}
 
 listarVinculaciones(): void {
   if (!this.espacioId) return;
@@ -176,4 +186,24 @@ listarVinculaciones(): void {
     }
   });
 }
+
+listarUsuarios(): void {
+  this.cargandoUsuarios = true;
+
+  this.usuarioService.listarUsuarios().subscribe({
+    next: (respuesta) => {
+      this.usuarios = respuesta ?? [];
+      this.cargandoUsuarios = false;
+      this.cdr.markForCheck();
+
+      console.log('Usuarios disponibles:', this.usuarios);
+    },
+    error: (err) => {
+      this.cargandoUsuarios = false;
+      this.error = err.error?.error || 'No fue posible consultar los usuarios.';
+      this.cdr.markForCheck();
+    }
+  });
+}
+
 }

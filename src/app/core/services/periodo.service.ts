@@ -8,7 +8,16 @@ import { Periodo, PeriodoCreate } from '../models/models';
 export class PeriodoService {
   private readonly http = inject(HttpClient);
 
+  private readonly apiUrl = `${environment.apiUrl}/periodos`;
+
   crear(periodo: PeriodoCreate) {
-    return this.http.post<Periodo>(`${environment.apiUrl}/periodos`, periodo);
+    return this.http.post<Periodo>(this.apiUrl, periodo);
+  }
+
+  listar() {
+    return this.http.get<{
+      total: number;
+      periodos: Periodo[];
+    }>(this.apiUrl);
   }
 }
