@@ -24,10 +24,22 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'mis-tareas',
+        loadComponent: () =>
+          import('./features/tareas/mis-tareas/mis-tareas').then((m) => m.MisTareas),
+      },
+      {
         path: 'reportesIA',
         loadComponent: () =>
           import('./features/reportsIA/reportsIA.component').then(
             (m) => m.ReportsIAComponent
+          ),
+      },
+      {
+        path: 'tareas',
+        loadComponent: () =>
+          import('./features/tareas/mis-tareas/mis-tareas').then(
+            (m) => m.MisTareas
           ),
       },
       {

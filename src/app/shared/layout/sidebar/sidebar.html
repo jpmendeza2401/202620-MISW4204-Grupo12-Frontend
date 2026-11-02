@@ -43,6 +43,15 @@
       <span>Crear periodo</span>
     </a>
     <a
+      routerLink="/mis-tareas"
+      routerLinkActive="bg-primary text-white font-semibold shadow-sm"
+      class="flex items-center gap-3 px-3.5 py-2.5 text-slate-var font-medium text-sm rounded-xl transition-colors"
+      (click)="cerrar.emit()"
+    >
+      <span class="material-symbols-outlined text-[20px]">task_alt</span>
+      <span>Mis tareas</span>
+    </a>
+    <a
       routerLink="/reportes"
       routerLinkActive="bg-primary text-white font-semibold shadow-sm"
       class="flex items-center gap-3 px-3.5 py-2.5 text-slate-var font-medium text-sm rounded-xl transition-colors"
@@ -68,6 +77,15 @@
     >
       <span class="material-symbols-outlined text-[20px]">school</span>
       <span>Espacios</span>
+    </a>
+    <a
+      routerLink="/tareas"
+      routerLinkActive="bg-primary text-white font-semibold shadow-sm"
+      class="flex items-center gap-3 px-3.5 py-2.5 text-slate-var font-medium text-sm rounded-xl transition-colors"
+      (click)="cerrar.emit()"
+    >
+      <span class="material-symbols-outlined text-[20px]">school</span>
+      <span>Tareas</span>
     </a>
     <a
       routerLink="/reportesIA"
