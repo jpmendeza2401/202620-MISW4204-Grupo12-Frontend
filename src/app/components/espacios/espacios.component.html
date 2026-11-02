@@ -1,0 +1,419 @@
+
+<div class="page-container">
+
+  <!-- ENCABEZADO -->
+  <header class="page-header">
+    <div class="header-title">
+      <div class="eyebrow">
+        <span class="material-symbols-outlined">school</span>
+        GESTIÓN ACADÉMICA
+      </div>
+
+      <h1>Espacios académicos</h1>
+
+      <p>
+        Administra tus cursos y proyectos académicos vinculados a tu carga docente.
+      </p>
+    </div>
+
+    <button
+      *ngIf="!mostrarFormulario && vista === 'activos'"
+      class="btn-primary"
+      (click)="abrirFormulario()">
+      <span class="material-symbols-outlined">add</span>
+      Nuevo espacio
+    </button>
+  </header>
+
+  <!-- ALERTAS -->
+  <div class="alert alert-error" *ngIf="error">
+    <span class="material-symbols-outlined">error</span>
+    {{ error }}
+  </div>
+
+  <div class="alert alert-success" *ngIf="mensaje">
+    <span class="material-symbols-outlined">check_circle</span>
+    {{ mensaje }}
+  </div>
+
+  <!-- FORMULARIO DE CREACIÓN -->
+  <section class="form-layout" *ngIf="mostrarFormulario">
+
+    <div class="form-card">
+      <div class="form-accent"></div>
+
+      <div class="form-content">
+
+        <div class="section-heading">
+          <div>
+            <span class="section-indicator"></span>
+            <h2>Crear espacio académico</h2>
+          </div>
+
+          <p>
+            Completa la información del nuevo curso o proyecto.
+            Los campos marcados con (*) son obligatorios.
+          </p>
+        </div>
+
+        <form
+          #formEspacio="ngForm"
+          (ngSubmit)="crearEspacio()">
+
+          <div class="form-grid">
+
+            <div class="form-group">
+            <label for="periodo">
+                Periodo académico *
+            </label>
+
+            <select
+                id="periodo"
+                name="periodo"
+                [(ngModel)]="nuevoEspacio.periodo_academico_id"
+                required>
+
+                <option value="" disabled>
+                {{ cargandoPeriodos ? 'Consultando periodos...' : 'Selecciona un periodo' }}
+                </option>
+
+                @for (periodo of periodos; track periodo.id) {
+                <option [value]="periodo.id">
+                    {{ periodo.codigo }}
+                </option>
+                }
+
+            </select>
+            </div>
+
+            <div class="form-group">
+              <label for="tipo">Tipo de espacio *</label>
+
+              <select
+                id="tipo"
+                name="tipo"
+                [(ngModel)]="nuevoEspacio.tipo"
+                required>
+                <option value="curso">Curso</option>
+                <option value="proyecto">Proyecto</option>
+              </select>
+            </div>
+
+            <div class="form-group full-width">
+              <label for="nombre">
+                Nombre del espacio académico *
+              </label>
+
+              <input
+                id="nombre"
+                type="text"
+                name="nombre"
+                maxlength="80"
+                [(ngModel)]="nuevoEspacio.nombre"
+                placeholder="Ej. Arquitectura de Software"
+                required>
+              <small>Máximo 80 caracteres.</small>
+            </div>
+
+            <div class="form-group">
+              <label for="fechaInicio">Fecha de inicio *</label>
+
+              <input
+                id="fechaInicio"
+                type="date"
+                name="fechaInicio"
+                [(ngModel)]="nuevoEspacio.fecha_inicio"
+                required>
+            </div>
+
+            <div class="form-group">
+              <label for="fechaFin">Fecha de finalización *</label>
+
+              <input
+                id="fechaFin"
+                type="date"
+                name="fechaFin"
+                [(ngModel)]="nuevoEspacio.fecha_fin"
+                [min]="nuevoEspacio.fecha_inicio"
+                required>
+            </div>
+
+            <div class="form-group full-width">
+              <label for="observaciones">
+                Observaciones y requerimientos de soporte
+              </label>
+
+              <textarea
+                id="observaciones"
+                name="observaciones"
+                rows="4"
+                [(ngModel)]="nuevoEspacio.observaciones"
+                placeholder="Información adicional del espacio...">
+              </textarea>
+              <small>Campo opcional.</small>
+            </div>
+
+          </div>
+
+          <div class="form-footer">
+            <span class="security-note">
+              <span class="material-symbols-outlined">lock</span>
+              Registro de espacio académico
+            </span>
+
+            <div class="form-actions">
+              <button
+                type="button"
+                class="btn-secondary"
+                (click)="cancelarFormulario()">
+                Cancelar
+              </button>
+
+              <button
+                type="submit"
+                class="btn-primary"
+                [disabled]="guardando || formEspacio.invalid">
+                <span class="material-symbols-outlined">add_circle</span>
+                {{ guardando ? 'Guardando...' : 'Crear espacio' }}
+              </button>
+            </div>
+          </div>
+
+        </form>
+      </div>
+    </div>
+
+    <!-- VISTA PREVIA -->
+    <aside class="preview-card">
+
+      <div class="preview-header">
+        <span class="material-symbols-outlined">visibility</span>
+        Vista previa
+      </div>
+
+      <div class="preview-content">
+
+        <span
+          class="type-badge"
+          [class.project]="nuevoEspacio.tipo === 'proyecto'">
+          {{ nuevoEspacio.tipo === 'curso' ? 'Curso' : 'Proyecto' }}
+        </span>
+
+        <h3>
+          {{ nuevoEspacio.nombre || 'Nombre del espacio académico' }}
+        </h3>
+
+        <div class="preview-data">
+          <div>
+            <span>Periodo académico</span>
+            <strong>
+              {{ nuevoEspacio.periodo_academico_id || 'Sin definir' }}
+            </strong>
+          </div>
+
+          <div>
+            <span>Fecha de inicio</span>
+            <strong>{{ nuevoEspacio.fecha_inicio || 'Sin definir' }}</strong>
+          </div>
+
+          <div>
+            <span>Fecha de finalización</span>
+            <strong>{{ nuevoEspacio.fecha_fin || 'Sin definir' }}</strong>
+          </div>
+        </div>
+
+        <div class="preview-observations">
+          <span>Observaciones</span>
+          <p>
+            {{ nuevoEspacio.observaciones || 'Sin observaciones adicionales.' }}
+          </p>
+        </div>
+
+        <div class="preview-status">
+          <span class="status-dot"></span>
+          Se registrará como activo
+        </div>
+
+      </div>
+
+      <p class="preview-footer">
+        Así se visualizará el espacio académico en el listado una vez creado.
+      </p>
+
+    </aside>
+  </section>
+
+  <!-- LISTADO DE ESPACIOS -->
+  <section class="list-section" *ngIf="!mostrarFormulario">
+
+    <!-- BARRA DE HERRAMIENTAS -->
+    <div class="toolbar">
+
+      <div class="tabs">
+        <button
+          [class.active]="vista === 'activos'"
+          (click)="cambiarVista('activos')">
+          Activos
+        </button>
+
+        <button
+          [class.active]="vista === 'cerrados'"
+          (click)="cambiarVista('cerrados')">
+          Cerrados
+        </button>
+      </div>
+
+      <div class="filters">
+
+        <select
+          [(ngModel)]="tipoFiltro"
+          name="tipoFiltro">
+          <option value="todos">Todos los tipos</option>
+          <option value="curso">Solo cursos</option>
+          <option value="proyecto">Solo proyectos</option>
+        </select>
+
+        <input
+          type="text"
+          [(ngModel)]="periodoFiltro"
+          name="periodoFiltro"
+          placeholder="Filtrar por periodo...">
+
+        <div class="search-box">
+          <span class="material-symbols-outlined">search</span>
+          <input
+            type="text"
+            [(ngModel)]="busqueda"
+            name="busqueda"
+            placeholder="Buscar por nombre o ID...">
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ESTADOS DE CARGA -->
+    <div class="loading" *ngIf="cargando">
+      <span class="material-symbols-outlined spin">progress_activity</span>
+      Consultando espacios académicos...
+    </div>
+
+    <!-- ESTADO VACÍO -->
+    <div
+      class="empty-state"
+      *ngIf="!cargando && espaciosFiltrados.length === 0">
+
+      <span class="material-symbols-outlined">domain_disabled</span>
+
+      <h3>No se encontraron espacios académicos</h3>
+
+      <p>
+        No hay resultados que coincidan con los filtros seleccionados.
+      </p>
+    </div>
+
+    <!-- TARJETAS -->
+    <div
+      class="spaces-grid"
+      *ngIf="!cargando && espaciosFiltrados.length > 0">
+
+      <article
+        class="space-card"
+        *ngFor="let espacio of espaciosFiltrados">
+
+        <div
+          class="card-accent"
+          [class.project]="espacio.tipo === 'proyecto'">
+        </div>
+
+        <div class="card-content">
+
+          <!-- TIPO Y ESTADO -->
+          <div class="card-top">
+
+            <span
+              class="type-badge"
+              [class.project]="espacio.tipo === 'proyecto'">
+
+              <span class="material-symbols-outlined">
+                {{ espacio.tipo === 'curso' ? 'menu_book' : 'science' }}
+              </span>
+
+              {{ espacio.tipo === 'curso' ? 'Curso' : 'Proyecto' }}
+            </span>
+
+            <span
+              class="status-badge"
+              [class.closed]="espacio.estado === 'cerrado'">
+
+              <span class="status-dot"></span>
+
+              {{ espacio.estado === 'activo' ? 'Activo' : 'Cerrado' }}
+            </span>
+
+          </div>
+
+          <!-- NOMBRE -->
+          <div class="card-title">
+            <h3>{{ espacio.nombre }}</h3>
+
+            <p>
+              <span class="material-symbols-outlined">schedule</span>
+              Periodo académico:
+              <strong>{{ espacio.periodo_academico_id }}</strong>
+            </p>
+          </div>
+
+          <!-- FECHAS -->
+          <div class="dates-box">
+
+            <div>
+              <span>Fecha de inicio</span>
+              <strong>{{ formatearFecha(espacio.fecha_inicio) }}</strong>
+            </div>
+
+            <div>
+              <span>Fecha de finalización</span>
+              <strong>{{ formatearFecha(espacio.fecha_fin) }}</strong>
+            </div>
+
+          </div>
+
+          <!-- OBSERVACIONES -->
+          <div class="observations" *ngIf="espacio.observaciones">
+            <span>Observaciones</span>
+            <p>{{ espacio.observaciones }}</p>
+          </div>
+
+        </div>
+
+        <!-- ACCIONES -->
+        <div class="card-actions">
+
+          <span class="space-id">
+            ID: {{ espacio.id }}
+          </span>
+
+          <button
+            *ngIf="vista === 'activos'"
+            class="btn-close-space"
+            (click)="cerrarEspacio(espacio)">
+            <span class="material-symbols-outlined">lock</span>
+            Cerrar espacio
+          </button>
+
+          <button
+            class="btn-secondary"
+            [routerLink]="['/espacios', espacio.id, 'vinculaciones']">
+            <span class="material-symbols-outlined">groups</span>
+            Ver vinculaciones
+            </button>
+
+        </div>
+
+      </article>
+
+    </div>
+
+  </section>
+
+</div>
