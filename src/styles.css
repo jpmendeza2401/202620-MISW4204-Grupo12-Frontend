@@ -79,6 +79,16 @@
   --color-slate-light: #64748b;
   --color-slate-muted: #94a3b8;
 
+  /* Alias usados en las pantallas (antes no existían y Tailwind ignoraba
+     esas clases: p. ej. botones con fondo blanco y texto blanco). */
+  --color-academic-blue: #1e40af;
+  --color-academic-blue-dark: #1d4ed8;
+  --color-carbon-900: #0f172a;
+  --color-slate-var: #475569;
+  --color-slate-var-muted: #64748b;
+  --color-operational-teal-tint: #ccfbf1;
+  --color-operational-teal-deep: #0f766e;
+
   --color-success: #0f766e;
   --color-success-light: #ccfbf1;
   --color-warning: #92400e;
