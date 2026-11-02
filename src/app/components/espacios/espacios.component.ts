@@ -10,6 +10,8 @@ import {
   EspacioAcademico,
   CrearEspacioRequest
 } from '../../models/espacio.model';
+import { PeriodoService } from '../../core/services/periodo.service';
+import { Periodo } from '../../core/models/models';
 
 @Component({
   selector: 'app-espacios',
@@ -38,6 +40,7 @@ export class EspaciosComponent implements OnInit {
 
   ngOnInit(): void {
     this.listarEspacios();
+    this.listarPeriodos();
   }
 
   private formularioVacio(): CrearEspacioRequest {
@@ -50,6 +53,11 @@ export class EspaciosComponent implements OnInit {
       observaciones: ''
     };
   }
+
+  private readonly periodoService = inject(PeriodoService);
+
+periodos: Periodo[] = [];
+cargandoPeriodos = false;
 
 listarEspacios(): void {
   this.cargando = true;
@@ -206,6 +214,24 @@ formatearFecha(fecha: string | null): string {
   if (partes.length !== 3) return fecha;
 
   return `${partes[2]}/${partes[1]}/${partes[0]}`;
+}
+
+
+listarPeriodos(): void {
+  this.cargandoPeriodos = true;
+
+  this.periodoService.listar().subscribe({
+    next: (respuesta) => {
+      this.periodos = respuesta.periodos ?? [];
+      this.cargandoPeriodos = false;
+      this.cdr.markForCheck();
+    },
+    error: (err) => {
+      console.error('Error consultando periodos:', err);
+      this.cargandoPeriodos = false;
+      this.cdr.markForCheck();
+    }
+  });
 }
 
 }

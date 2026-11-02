@@ -208,24 +208,38 @@
       <div class="form-grid">
 
         <!-- Usuario -->
-        <div class="form-field">
+        <!-- Usuario -->
+<div class="form-field">
   <label for="usuario_id">
-    Identificador del usuario
+    Usuario
     <span class="required">*</span>
   </label>
 
-  <input
+  <select
     id="usuario_id"
-    type="text"
     name="usuario_id"
     [(ngModel)]="nuevaVinculacion.usuario_id"
-    placeholder="Ej. e4a6e99f-8e57-462f-8259-4ce8aba4cf56"
-    autocomplete="off"
     required>
 
+    <option value="" disabled>
+      {{ cargandoUsuarios ? 'Consultando usuarios...' : 'Selecciona un usuario' }}
+    </option>
+
+    @for (usuario of usuarios; track usuario.id) {
+      <option [value]="usuario.id">
+        {{ usuario.nombre }} - {{ usuario.correo }}
+      </option>
+    }
+
+  </select>
+
   <small>
-    Ingresa el UUID del usuario que deseas vincular.
+    Selecciona la persona que deseas vincular.
   </small>
+
+  @if (!cargandoUsuarios && usuarios.length === 0) {
+    <small>No hay usuarios disponibles.</small>
+  }
 </div>
 
         <!-- Rol -->
