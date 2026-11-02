@@ -3,6 +3,8 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
+import { environment } from '../../environments/environment';
+
 import {
   EspacioAcademico,
   CrearEspacioRequest
@@ -13,10 +15,9 @@ import {
 })
 export class EspaciosService {
 
-  private http = inject(HttpClient);
+  private readonly http = inject(HttpClient);
 
-  // Ajustar al puerto donde se ejecuta tu backend Go.
-  private apiUrl = 'http://localhost:8080/api/v1/espacios';
+  private readonly apiUrl = `${environment.apiUrl}/espacios`;
 
   /**
    * Consultar espacios activos del profesor autenticado.

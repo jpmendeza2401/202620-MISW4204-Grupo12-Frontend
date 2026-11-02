@@ -209,24 +209,24 @@
 
         <!-- Usuario -->
         <div class="form-field">
-          <label for="usuario_id">
-            Identificador del usuario
-            <span class="required">*</span>
-          </label>
+  <label for="usuario_id">
+    Identificador del usuario
+    <span class="required">*</span>
+  </label>
 
-          <input
-            id="usuario_id"
-            type="number"
-            name="usuario_id"
-            [(ngModel)]="nuevaVinculacion.usuario_id"
-            placeholder="Ej. 25"
-            min="1"
-            required>
+  <input
+    id="usuario_id"
+    type="text"
+    name="usuario_id"
+    [(ngModel)]="nuevaVinculacion.usuario_id"
+    placeholder="Ej. e4a6e99f-8e57-462f-8259-4ce8aba4cf56"
+    autocomplete="off"
+    required>
 
-          <small>
-            Ingresa el ID del usuario que deseas vincular.
-          </small>
-        </div>
+  <small>
+    Ingresa el UUID del usuario que deseas vincular.
+  </small>
+</div>
 
         <!-- Rol -->
         <div class="form-field">
@@ -305,12 +305,17 @@
           Cancelar
         </button>
 
-        <button
-          type="submit"
-          class="btn-primary"
-          [disabled]="formVinculacion.invalid">
-          Validar datos
-        </button>
+<button
+  type="submit"
+  class="btn-primary">
+
+  @if (guardando) {
+    Guardando...
+  } @else {
+    Crear vinculación
+  }
+
+</button>
 
       </div>
 
