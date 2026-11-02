@@ -145,7 +145,6 @@ export interface ListarReportesResponse {
 }
 
 export interface CrearReporteRequest {
-  usuario_id: string;
   semana_inicio: string;
 }
 

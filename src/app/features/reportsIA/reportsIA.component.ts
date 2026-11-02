@@ -108,15 +108,6 @@ export class ReportsIAComponent implements OnInit {
   }
 
   solicitarReporte(): void {
-    const usuarioId = this.obtenerUsuarioId();
-
-    if (!usuarioId) {
-      this.mostrarToast(
-        'No fue posible identificar al usuario autenticado.',
-        'error'
-      );
-      return;
-    }
 
     if (!this.fechaSemana) {
       this.errorMensaje = 'Selecciona la fecha de inicio de la semana.';
@@ -128,7 +119,6 @@ export class ReportsIAComponent implements OnInit {
     }
 
     const datos = {
-      usuario_id: usuarioId,
       semana_inicio: `${this.fechaSemana}T00:00:00Z`
     };
 
