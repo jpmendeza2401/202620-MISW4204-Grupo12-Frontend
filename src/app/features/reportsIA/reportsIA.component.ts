@@ -119,7 +119,7 @@ export class ReportsIAComponent implements OnInit {
     }
 
     const datos = {
-      semana_inicio: `${this.fechaSemana}T00:00:00Z`
+      semana_inicio: this.fechaSemana
     };
 
     this.generandoReporte = true;
