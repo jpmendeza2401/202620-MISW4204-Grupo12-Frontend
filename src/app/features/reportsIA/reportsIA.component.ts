@@ -1,5 +1,5 @@
 
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -19,7 +19,7 @@ type FiltroReporte = 'all' | 'processing' | 'completed' | 'failed';
 })
 export class ReportsIAComponent implements OnInit {
   private readonly reporteService = inject(ReporteService);
-
+  private readonly cdr = inject(ChangeDetectorRef);
   reportes: ReporteSemanal[] = [];
   reportesFiltrados: ReporteSemanal[] = [];
 
@@ -58,16 +58,38 @@ export class ReportsIAComponent implements OnInit {
 
   listarReportes(): void {
     this.cargandoListado = true;
+    this.cdr.markForCheck();
 
     this.reporteService.listarReportesSemanales()
-      .pipe(finalize(() => this.cargandoListado = false))
+      .pipe(
+        finalize(() => {
+          this.cargandoListado = false;
+          this.cdr.markForCheck();
+        })
+      )
       .subscribe({
         next: respuesta => {
+          console.log('Respuesta del backend:', respuesta);
+
           this.reportes = respuesta.reportes ?? [];
           this.aplicarFiltros();
+
+          console.log('Reportes filtrados:', this.reportesFiltrados);
+
+          this.cdr.markForCheck();
         },
         error: error => {
-          this.mostrarError(error, 'No fue posible cargar los reportes.');
+          console.error('Error cargando reportes:', error);
+
+          this.reportes = [];
+          this.aplicarFiltros();
+
+          this.mostrarError(
+            error,
+            'No fue posible cargar los reportes.'
+          );
+
+          this.cdr.markForCheck();
         }
       });
   }
@@ -187,19 +209,23 @@ export class ReportsIAComponent implements OnInit {
     const termino = this.terminoBusqueda.trim().toLowerCase();
 
     this.reportesFiltrados = this.reportes.filter(reporte => {
-      const estado = this.normalizarEstado(reporte.estado);
       const coincideFiltro =
-        this.filtroActivo === 'all' || estado === this.filtroActivo;
+        this.filtroActivo === 'all' ||
+        this.normalizarEstado(reporte.estado) === this.filtroActivo;
+      const coincideBusqueda =
+        !termino ||
+        [
+          reporte.id,
+          reporte.usuario_id,
+          reporte.semana_inicio,
+          reporte.semana_fin,
+          reporte.estado
+        ]
+          .join(' ')
+          .toLowerCase()
+          .includes(termino);
 
-      const texto = [
-        reporte.id,
-        reporte.usuario_id,
-        reporte.semana_inicio,
-        reporte.semana_fin,
-        reporte.estado
-      ].join(' ').toLowerCase();
-
-      return coincideFiltro && texto.includes(termino);
+      return coincideFiltro && coincideBusqueda;
     });
   }
 
