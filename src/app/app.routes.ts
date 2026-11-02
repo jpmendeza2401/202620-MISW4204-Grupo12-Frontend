@@ -24,6 +24,11 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'mis-tareas',
+        loadComponent: () =>
+          import('./features/tareas/mis-tareas/mis-tareas').then((m) => m.MisTareas),
+      },
+      {
         path: 'reportes',
         loadComponent: () =>
           import('./features/reportes/reportes/reportes').then(
