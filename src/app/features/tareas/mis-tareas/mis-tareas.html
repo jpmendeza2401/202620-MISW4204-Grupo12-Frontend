@@ -105,6 +105,162 @@
         {{ error() }}
       </div>
     }
+    @if (exito()) {
+      <div
+        class="bg-teal-50 border border-teal-200 text-teal-800 text-sm rounded-xl px-4 py-3 mb-6"
+        role="status"
+      >
+        {{ exito() }}
+      </div>
+    }
+
+    <!-- Encabezado de la lista + botón Nueva tarea -->
+    <div class="flex items-center justify-between mb-3">
+      <h2 class="text-lg font-semibold text-carbon-900">Tareas de la semana</h2>
+      @if (esSemanaActual() && editando() === null) {
+        <button
+          type="button"
+          class="inline-flex items-center gap-2 px-5 py-2.5 rounded-3xl bg-academic-blue hover:bg-academic-blue-dark text-white font-semibold text-sm shadow-sm"
+          (click)="abrirNueva()"
+        >
+          <span class="material-symbols-outlined text-[18px]">add</span>
+          Nueva tarea
+        </button>
+      }
+    </div>
+    @if (!esSemanaActual()) {
+      <p class="text-xs text-slate-var mb-3">
+        Las semanas anteriores son de solo lectura: solo se registran y modifican tareas de la
+        semana en curso.
+      </p>
+    }
+
+    <!-- Formulario crear / editar -->
+    @if (editando() !== null) {
+      <section
+        class="bg-white rounded-2xl border border-border-ui shadow-sm p-6 mb-6 border-t-2 border-t-teal-600"
+      >
+        <h3 class="text-base font-semibold text-carbon-900 mb-4">
+          {{ editando() === 'nueva' ? 'Nueva tarea' : 'Editar tarea' }}
+        </h3>
+        <form class="flex flex-col gap-4" [formGroup]="form" (ngSubmit)="guardar()">
+          <div class="flex flex-col gap-1.5">
+            <label class="text-xs font-bold text-carbon-900 uppercase tracking-wider" for="titulo"
+              >Título <span class="text-red-600">*</span></label
+            >
+            <input
+              id="titulo"
+              formControlName="titulo"
+              maxlength="160"
+              placeholder="Ej. Calificar taller 3"
+              class="w-full bg-slate-50 border border-border-ui px-4 py-2.5 rounded-xl text-sm outline-none focus:bg-white focus:border-academic-blue focus:ring-2 focus:ring-academic-blue/15"
+            />
+            @if (campoInvalido('titulo')) {
+              <span class="text-xs text-red-600">El título es obligatorio (máximo 160).</span>
+            }
+          </div>
+
+          <div class="flex flex-col gap-1.5">
+            <label
+              class="text-xs font-bold text-carbon-900 uppercase tracking-wider"
+              for="descripcion"
+              >Descripción <span class="text-red-600">*</span></label
+            >
+            <textarea
+              id="descripcion"
+              formControlName="descripcion"
+              rows="3"
+              placeholder="¿Qué hiciste?"
+              class="w-full bg-slate-50 border border-border-ui px-4 py-2.5 rounded-xl text-sm outline-none focus:bg-white focus:border-academic-blue focus:ring-2 focus:ring-academic-blue/15"
+            ></textarea>
+            @if (campoInvalido('descripcion')) {
+              <span class="text-xs text-red-600">La descripción es obligatoria.</span>
+            }
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="flex flex-col gap-1.5">
+              <label class="text-xs font-bold text-carbon-900 uppercase tracking-wider" for="estado"
+                >Estado</label
+              >
+              <select
+                id="estado"
+                formControlName="estado"
+                class="w-full bg-slate-50 border border-border-ui px-4 py-2.5 rounded-xl text-sm font-semibold outline-none focus:bg-white focus:border-academic-blue focus:ring-2 focus:ring-academic-blue/15"
+              >
+                @for (e of estados; track e.valor) {
+                  <option [value]="e.valor">{{ e.etiqueta }}</option>
+                }
+              </select>
+            </div>
+            <div class="flex flex-col gap-1.5">
+              <label class="text-xs font-bold text-carbon-900 uppercase tracking-wider" for="horas"
+                >Horas invertidas <span class="text-red-600">*</span></label
+              >
+              <input
+                id="horas"
+                type="number"
+                min="0"
+                max="168"
+                step="1"
+                formControlName="horas_invertidas"
+                class="w-full bg-slate-50 border border-border-ui px-4 py-2.5 rounded-xl text-sm tabular-nums outline-none focus:bg-white focus:border-academic-blue focus:ring-2 focus:ring-academic-blue/15"
+              />
+              @if (campoInvalido('horas_invertidas')) {
+                <span class="text-xs text-red-600">Número entero entre 0 y 168.</span>
+              }
+            </div>
+          </div>
+
+          <div class="flex flex-col gap-1.5">
+            <label
+              class="text-xs font-bold text-carbon-900 uppercase tracking-wider"
+              for="observaciones"
+              >Observaciones</label
+            >
+            <input
+              id="observaciones"
+              formControlName="observaciones"
+              placeholder="Opcional"
+              class="w-full bg-slate-50 border border-border-ui px-4 py-2.5 rounded-xl text-sm outline-none focus:bg-white focus:border-academic-blue focus:ring-2 focus:ring-academic-blue/15"
+            />
+          </div>
+
+          @if (errorFormulario()) {
+            <div
+              class="bg-red-50 border border-red-200 text-red-800 text-sm rounded-xl px-4 py-3"
+              role="alert"
+            >
+              {{ errorFormulario() }}
+            </div>
+          }
+
+          <div class="flex items-center gap-3 pt-2">
+            <button
+              type="submit"
+              [disabled]="guardando()"
+              class="inline-flex items-center gap-2 px-6 py-2.5 rounded-3xl bg-teal-600 hover:bg-teal-700 text-white font-semibold text-sm shadow-sm disabled:opacity-60"
+            >
+              <span class="material-symbols-outlined text-[18px]">check_circle</span>
+              {{
+                guardando()
+                  ? 'Guardando…'
+                  : editando() === 'nueva'
+                    ? 'Registrar tarea'
+                    : 'Guardar cambios'
+              }}
+            </button>
+            <button
+              type="button"
+              class="px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-var hover:bg-slate-100"
+              (click)="cerrarFormulario()"
+            >
+              Cancelar
+            </button>
+          </div>
+        </form>
+      </section>
+    }
 
     <!-- Lista de tareas -->
     <section class="bg-white rounded-2xl border border-border-ui shadow-sm">
@@ -127,21 +283,55 @@
                   </div>
                 }
               </div>
-              <div class="flex items-center gap-2 shrink-0">
+              <div class="flex flex-wrap items-center gap-2 shrink-0">
                 @if (t.es_tardia) {
                   <span
                     class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800"
                     >Tardía</span
                   >
                 }
-                <span
-                  class="px-2.5 py-0.5 rounded-full text-xs font-semibold"
-                  [class]="claseEstado(t.estado)"
-                  >{{ etiquetaEstado(t.estado) }}</span
-                >
+                @if (puedeModificar(t)) {
+                  <select
+                    class="px-2.5 py-1 rounded-full text-xs font-semibold border-0 outline-none cursor-pointer"
+                    [class]="claseEstado(t.estado)"
+                    [value]="t.estado"
+                    (change)="cambiarEstado(t, $any($event.target).value)"
+                    [attr.aria-label]="'Estado de ' + t.titulo"
+                  >
+                    @for (e of estados; track e.valor) {
+                      <option [value]="e.valor">{{ e.etiqueta }}</option>
+                    }
+                  </select>
+                } @else {
+                  <span
+                    class="px-2.5 py-0.5 rounded-full text-xs font-semibold"
+                    [class]="claseEstado(t.estado)"
+                    >{{ etiquetaEstado(t.estado) }}</span
+                  >
+                }
                 <span class="text-sm font-bold text-carbon-900 tabular-nums w-12 text-right"
                   >{{ t.horas_invertidas }} h</span
                 >
+                @if (puedeModificar(t)) {
+                  <button
+                    type="button"
+                    class="w-9 h-9 rounded-xl text-slate-var hover:bg-slate-100 flex items-center justify-center"
+                    (click)="abrirEdicion(t)"
+                    [attr.aria-label]="'Editar ' + t.titulo"
+                    title="Editar"
+                  >
+                    <span class="material-symbols-outlined text-[20px]">edit</span>
+                  </button>
+                  <button
+                    type="button"
+                    class="w-9 h-9 rounded-xl text-red-600 hover:bg-red-50 flex items-center justify-center"
+                    (click)="eliminar(t)"
+                    [attr.aria-label]="'Eliminar ' + t.titulo"
+                    title="Eliminar"
+                  >
+                    <span class="material-symbols-outlined text-[20px]">delete</span>
+                  </button>
+                }
               </div>
             </li>
           }
