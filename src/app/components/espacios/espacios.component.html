@@ -63,17 +63,27 @@
           <div class="form-grid">
 
             <div class="form-group">
-              <label for="periodo">
-                ID del periodo académico *
-              </label>
+            <label for="periodo">
+                Periodo académico *
+            </label>
 
-              <input
+            <select
                 id="periodo"
-                type="text"
                 name="periodo"
                 [(ngModel)]="nuevoEspacio.periodo_academico_id"
-                placeholder="Ej. 104"
                 required>
+
+                <option value="" disabled>
+                {{ cargandoPeriodos ? 'Consultando periodos...' : 'Selecciona un periodo' }}
+                </option>
+
+                @for (periodo of periodos; track periodo.id) {
+                <option [value]="periodo.id">
+                    {{ periodo.codigo }}
+                </option>
+                }
+
+            </select>
             </div>
 
             <div class="form-group">
@@ -390,6 +400,13 @@
             <span class="material-symbols-outlined">lock</span>
             Cerrar espacio
           </button>
+
+          <button
+            class="btn-secondary"
+            [routerLink]="['/espacios', espacio.id, 'vinculaciones']">
+            <span class="material-symbols-outlined">groups</span>
+            Ver vinculaciones
+            </button>
 
         </div>
 

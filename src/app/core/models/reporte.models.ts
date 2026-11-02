@@ -128,3 +128,48 @@ export interface FiltrosReporte {
   espacio_id?: string;
   periodo_id?: string;
 }
+export interface ReporteSemanal {
+  id: string;
+  usuario_id: string;
+  profesor_generador_id: string;
+  semana_inicio: string;
+  semana_fin: string;
+  fecha_generacion: string;
+  estado: string;
+  ruta_pdf?: string;
+}
+
+export interface ListarReportesResponse {
+  reportes: ReporteSemanal[];
+  total: number;
+}
+
+export interface CrearReporteRequest {
+  semana_inicio: string;
+}
+
+export interface CrearReporteResponse {
+  mensaje: string;
+  reporte: ReporteSemanal;
+  analisis_ia: {
+    id: string;
+    reporte_id: string;
+    estado: string;
+    intentos: number;
+    creado_en: string;
+    actualizado_en: string;
+  };
+}
+
+export interface AnalizarReporteResponse {
+  estado: string;
+  mensaje: string;
+  reporte_id: string;
+}
+
+export interface GenerarPdfResponse {
+  descarga: string;
+  mensaje: string;
+  reporte_id: string;
+  ruta_pdf: string;
+}

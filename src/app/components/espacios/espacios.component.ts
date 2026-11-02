@@ -1,18 +1,22 @@
 
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { finalize } from 'rxjs';
+import { RouterLink } from '@angular/router';
 
 import { EspaciosService } from '../../services/espacios.service';
 import {
   EspacioAcademico,
   CrearEspacioRequest
 } from '../../models/espacio.model';
+import { PeriodoService } from '../../core/services/periodo.service';
+import { Periodo } from '../../core/models/models';
 
 @Component({
   selector: 'app-espacios',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './espacios.component.html',
   styleUrl: './espacios.component.css'
 })
@@ -26,6 +30,7 @@ export class EspaciosComponent implements OnInit {
   guardando = false;
   error = '';
   mensaje = '';
+  private cdr = inject(ChangeDetectorRef);
 
   mostrarFormulario = false;
   vista: 'activos' | 'cerrados' = 'activos';
@@ -35,6 +40,7 @@ export class EspaciosComponent implements OnInit {
 
   ngOnInit(): void {
     this.listarEspacios();
+    this.listarPeriodos();
   }
 
   private formularioVacio(): CrearEspacioRequest {
@@ -48,25 +54,34 @@ export class EspaciosComponent implements OnInit {
     };
   }
 
-  listarEspacios(): void {
-    this.cargando = true;
-    this.error = '';
+  private readonly periodoService = inject(PeriodoService);
 
-    const peticion = this.vista === 'activos'
-      ? this.espaciosService.listar()
-      : this.espaciosService.listarCerrados();
+periodos: Periodo[] = [];
+cargandoPeriodos = false;
 
-    peticion.subscribe({
-      next: (respuesta) => {
-        this.espacios = respuesta ?? [];
-        this.cargando = false;
-      },
-      error: (err) => {
-        this.error = err.error?.error || 'No fue posible consultar los espacios.';
-        this.cargando = false;
-      }
-    });
-  }
+listarEspacios(): void {
+  this.cargando = true;
+  this.error = '';
+
+  const peticion = this.vista === 'activos'
+    ? this.espaciosService.listar()
+    : this.espaciosService.listarCerrados();
+
+  peticion.subscribe({
+    next: (respuesta) => {
+      this.espacios = respuesta ?? [];
+      this.cargando = false;
+
+      this.cdr.markForCheck();
+    },
+    error: (err) => {
+      this.error = err.error?.error || 'No fue posible consultar los espacios.';
+      this.cargando = false;
+
+      this.cdr.markForCheck();
+    }
+  });
+}
 
   cambiarVista(vista: 'activos' | 'cerrados'): void {
     this.vista = vista;
@@ -84,41 +99,49 @@ export class EspaciosComponent implements OnInit {
   //   );
   // }
 
-  crearEspacio(): void {
-    this.error = '';
-    this.mensaje = '';
+crearEspacio(): void {
+  this.error = '';
+  this.mensaje = '';
 
-    if (
-      !this.nuevoEspacio.periodo_academico_id.trim() ||
-      !this.nuevoEspacio.nombre.trim() ||
-      !this.nuevoEspacio.fecha_inicio ||
-      !this.nuevoEspacio.fecha_fin
-    ) {
-      this.error = 'Completa todos los campos obligatorios.';
-      return;
-    }
+  if (
+    !this.nuevoEspacio.periodo_academico_id.trim() ||
+    !this.nuevoEspacio.nombre.trim() ||
+    !this.nuevoEspacio.fecha_inicio ||
+    !this.nuevoEspacio.fecha_fin
+  ) {
+    this.error = 'Completa todos los campos obligatorios.';
+    return;
+  }
 
-    if (this.nuevoEspacio.fecha_fin < this.nuevoEspacio.fecha_inicio) {
-      this.error = 'La fecha de finalización no puede ser anterior a la fecha de inicio.';
-      return;
-    }
+  if (this.nuevoEspacio.fecha_fin < this.nuevoEspacio.fecha_inicio) {
+    this.error = 'La fecha de finalización no puede ser anterior a la fecha de inicio.';
+    return;
+  }
 
-    this.guardando = true;
+  this.guardando = true;
 
-    this.espaciosService.crear(this.nuevoEspacio).subscribe({
-      next: () => {
+  this.espaciosService.crear(this.nuevoEspacio)
+    .pipe(
+      finalize(() => {
         this.guardando = false;
+      })
+    )
+    .subscribe({
+      next: () => {
         this.mensaje = 'El espacio académico fue creado correctamente.';
+
         this.nuevoEspacio = this.formularioVacio();
         this.mostrarFormulario = false;
+
         this.cambiarVista('activos');
       },
       error: (err) => {
-        this.guardando = false;
-        this.error = err.error?.error || 'No fue posible crear el espacio académico.';
+        this.error =
+          err.error?.error ||
+          'No fue posible crear el espacio académico.';
       }
     });
-  }
+}
 
   cerrarEspacio(espacio: EspacioAcademico): void {
     const confirmar = window.confirm(
@@ -191,6 +214,24 @@ formatearFecha(fecha: string | null): string {
   if (partes.length !== 3) return fecha;
 
   return `${partes[2]}/${partes[1]}/${partes[0]}`;
+}
+
+
+listarPeriodos(): void {
+  this.cargandoPeriodos = true;
+
+  this.periodoService.listar().subscribe({
+    next: (respuesta) => {
+      this.periodos = respuesta.periodos ?? [];
+      this.cargandoPeriodos = false;
+      this.cdr.markForCheck();
+    },
+    error: (err) => {
+      console.error('Error consultando periodos:', err);
+      this.cargandoPeriodos = false;
+      this.cdr.markForCheck();
+    }
+  });
 }
 
 }

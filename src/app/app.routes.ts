@@ -29,6 +29,13 @@ export const routes: Routes = [
           import('./features/tareas/mis-tareas/mis-tareas').then((m) => m.MisTareas),
       },
       {
+        path: 'reportesIA',
+        loadComponent: () =>
+          import('./features/reportsIA/reportsIA.component').then(
+            (m) => m.ReportsIAComponent
+          ),
+      },
+      {
         path: 'reportes',
         loadComponent: () =>
           import('./features/reportes/reportes/reportes').then(
@@ -77,7 +84,7 @@ export const routes: Routes = [
         path: '',
         pathMatch: 'full',
         redirectTo: 'crear-periodo',
-      },
+      }
     ],
   },
   {

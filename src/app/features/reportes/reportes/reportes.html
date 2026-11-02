@@ -136,7 +136,7 @@
         <button
           type="submit"
           [disabled]="!puedeConsultar()"
-          class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-academic-blue hover:bg-academic-blue-dark text-white font-semibold text-sm shadow-sm transition-all focus:ring-4 focus:ring-academic-blue/20 disabled:opacity-60"
+          class="inline-flex items-center gap-2 px-6 bg-primary py-2.5 rounded-xl hover:bg-academic-blue-dark text-white font-semibold text-sm shadow-sm transition-all focus:ring-4 focus:ring-academic-blue/20 disabled:opacity-60"
         >
           <span class="material-symbols-outlined text-[18px]">search</span>
           <span>{{ cargando() ? 'Consultando...' : 'Consultar' }}</span>
