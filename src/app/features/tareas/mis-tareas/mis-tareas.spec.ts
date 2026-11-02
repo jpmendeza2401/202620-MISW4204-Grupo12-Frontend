@@ -72,6 +72,15 @@ describe('MisTareas', () => {
     expect(c.totalHoras()).toBe(4);
   });
 
+  it('el selector de estado de cada tarea muestra su estado real', () => {
+    cargaInicial([{ ...tarea, estado: 'en_desarrollo' }]);
+    fixture.detectChanges();
+    const select: HTMLSelectElement = fixture.nativeElement.querySelector(
+      'select[aria-label^="Estado de"]',
+    );
+    expect(select.value).toBe('en_desarrollo');
+  });
+
   it('registra una tarea nueva y recarga la lista', () => {
     cargaInicial([]);
     c.abrirNueva();

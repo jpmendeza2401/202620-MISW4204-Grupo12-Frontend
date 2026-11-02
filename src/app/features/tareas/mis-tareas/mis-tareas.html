@@ -26,11 +26,10 @@
         <select
           id="vinculacion"
           class="w-full bg-slate-50 border border-border-ui px-4 py-2.5 rounded-xl text-sm font-semibold outline-none focus:bg-white focus:border-academic-blue focus:ring-2 focus:ring-academic-blue/15"
-          [value]="vinculacionId()"
           (change)="elegirVinculacion($any($event.target).value)"
         >
           @for (v of vinculaciones(); track v.vinculacion_id) {
-            <option [value]="v.vinculacion_id">
+            <option [value]="v.vinculacion_id" [selected]="v.vinculacion_id === vinculacionId()">
               {{ v.espacio_nombre }} · {{ v.rol_operativo }}
             </option>
           }
@@ -294,12 +293,13 @@
                   <select
                     class="px-2.5 py-1 rounded-full text-xs font-semibold border-0 outline-none cursor-pointer"
                     [class]="claseEstado(t.estado)"
-                    [value]="t.estado"
                     (change)="cambiarEstado(t, $any($event.target).value)"
                     [attr.aria-label]="'Estado de ' + t.titulo"
                   >
                     @for (e of estados; track e.valor) {
-                      <option [value]="e.valor">{{ e.etiqueta }}</option>
+                      <option [value]="e.valor" [selected]="e.valor === t.estado">
+                        {{ e.etiqueta }}
+                      </option>
                     }
                   </select>
                 } @else {
