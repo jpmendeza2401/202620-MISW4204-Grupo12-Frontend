@@ -60,7 +60,8 @@ export class Login {
               );
               return;
             }
-
+            this.auth.guardarUsuarioId(res.usuario.id);
+            this.auth.guardarRol(this.rolSeleccionado());
             this.router.navigate(['/crear-periodo']);
           },
           error: () => {

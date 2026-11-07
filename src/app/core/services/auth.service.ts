@@ -44,6 +44,9 @@ export class AuthService {
     try {
       sessionStorage.removeItem(TOKEN_KEY);
       sessionStorage.removeItem(USER_KEY);
+      localStorage.removeItem('rol_name');
+      localStorage.removeItem('user_id');
+
     } catch {}
     this.router.navigate(['/login']);
   }
@@ -70,5 +73,30 @@ export class AuthService {
     try {
       sessionStorage.setItem(key, value);
     } catch {}
+  }
+  guardarRol(rol: 'monitor' | 'profesor'): void {
+    localStorage.setItem('rol_name', rol);
+  }
+  obtenerRol(): 'monitor' | 'profesor' | null {
+    const rol = localStorage.getItem('rol_name');
+    if (rol === 'monitor' || rol === 'profesor') {
+      return rol;
+    }
+    return null;
+  }
+
+  esProfesor(): boolean {
+    return this.obtenerRol() === 'profesor';
+  }
+
+  esMonitor(): boolean {
+    return this.obtenerRol() === 'monitor';
+  }
+  guardarUsuarioId(usuarioId: string): void {
+    localStorage.setItem('user_id', usuarioId);
+  }
+
+  obtenerUsuarioId(): string | null {
+    return localStorage.getItem('user_id');
   }
 }
