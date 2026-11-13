@@ -1,7 +1,13 @@
+
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { forkJoin, of } from 'rxjs';
 import { catchError, finalize, map, switchMap } from 'rxjs/operators';
-import {UsuarioService, UsuarioResponse, RolUsuario} from '../../../core/services/user.service';
+import {
+  UsuarioService,
+  UsuarioResponse,
+  RolUsuario
+} from '../../../core/services/user.service';
+import { AuthService } from '../../../core/services/auth.service';
 import { RouterLink } from '@angular/router';
 
 interface UsuarioDirectorio extends UsuarioResponse {
@@ -15,11 +21,15 @@ interface UsuarioDirectorio extends UsuarioResponse {
 })
 export class ListComponent implements OnInit {
   private readonly usuarioService = inject(UsuarioService);
+  private readonly authService = inject(AuthService);
 
   protected readonly usuarios = signal<UsuarioDirectorio[]>([]);
   protected readonly cargando = signal(false);
   protected readonly error = signal<string | null>(null);
   protected readonly busqueda = signal('');
+
+  protected readonly esMonitor = this.authService.esMonitor();
+  protected readonly usuarioIdActual = this.authService.obtenerUsuarioId();
 
   protected readonly totalUsuarios = computed(
     () => this.usuarios().length
@@ -60,6 +70,15 @@ export class ListComponent implements OnInit {
     this.error.set(null);
 
     this.usuarioService.listarUsuarios().pipe(
+      map(usuarios => {
+        if (!this.esMonitor) {
+          return usuarios;
+        }
+
+        return usuarios.filter(
+          usuario => usuario.id === this.usuarioIdActual
+        );
+      }),
       switchMap(usuarios => {
         if (usuarios.length === 0) {
           return of([]);

@@ -1,0 +1,131 @@
+<div class="max-w-5xl mx-auto">
+  <div class="flex items-center justify-between gap-3 mb-2">
+    <div class="flex items-center gap-3">
+      <div class="w-1.5 h-7 bg-academic-blue rounded-full"></div>
+      <h1 class="text-2xl font-bold text-carbon-900 tracking-tight">Periodos Académicos</h1>
+    </div>
+    <a
+      routerLink="/crear-periodo"
+      class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-academic-blue hover:bg-academic-blue-dark text-white font-semibold text-sm shadow-sm transition-all"
+    >
+      <span class="material-symbols-outlined text-[18px]">add</span>
+      <span>Crear periodo</span>
+    </a>
+  </div>
+  <p class="text-sm text-slate-var mb-6">Consulta los periodos lectivos registrados.</p>
+
+  <section class="bg-white rounded-2xl border border-border-ui shadow-sm p-6 mb-6">
+    <form
+      class="grid grid-cols-1 sm:grid-cols-4 gap-4 items-end"
+      [formGroup]="filtros"
+      (ngSubmit)="cargar()"
+    >
+      <div class="flex flex-col gap-2">
+        <label class="text-xs font-bold text-carbon-900 uppercase tracking-wider" for="f-codigo">
+          Código
+        </label>
+        <input
+          id="f-codigo"
+          type="text"
+          formControlName="codigo"
+          maxlength="40"
+          placeholder="ej. 2026"
+          class="w-full bg-slate-50 border border-border-ui px-4 py-2.5 rounded-xl text-sm outline-none focus:bg-white focus:border-academic-blue focus:ring-2 focus:ring-academic-blue/15"
+        />
+      </div>
+      <div class="flex flex-col gap-2">
+        <label class="text-xs font-bold text-carbon-900 uppercase tracking-wider" for="f-hab">
+          Habilitado
+        </label>
+        <select
+          id="f-hab"
+          formControlName="habilitado"
+          class="w-full bg-slate-50 border border-border-ui px-4 py-2.5 rounded-xl text-sm outline-none focus:bg-white focus:border-academic-blue"
+        >
+          <option value="">Todos</option>
+          <option value="true">Habilitados</option>
+          <option value="false">Deshabilitados</option>
+        </select>
+      </div>
+      <div class="flex flex-col gap-2">
+        <label class="text-xs font-bold text-carbon-900 uppercase tracking-wider" for="f-vig">
+          Vigencia
+        </label>
+        <select
+          id="f-vig"
+          formControlName="vigente"
+          class="w-full bg-slate-50 border border-border-ui px-4 py-2.5 rounded-xl text-sm outline-none focus:bg-white focus:border-academic-blue"
+        >
+          <option value="">Todos</option>
+          <option value="true">Vigentes</option>
+          <option value="false">Finalizados</option>
+        </select>
+      </div>
+      <div class="flex items-center gap-3">
+        <button
+          type="submit"
+          class="px-5 py-2.5 rounded-xl bg-academic-blue hover:bg-academic-blue-dark text-white font-semibold text-sm shadow-sm"
+        >
+          Buscar
+        </button>
+        <button
+          type="button"
+          class="px-3 py-2.5 text-slate-var hover:text-red-600 font-semibold text-sm"
+          (click)="limpiar()"
+        >
+          Limpiar
+        </button>
+      </div>
+    </form>
+  </section>
+
+  @if (error(); as msg) {
+    <p class="text-sm text-red-700 bg-red-50 rounded-xl px-4 py-3 mb-4" role="alert">{{ msg }}</p>
+  }
+
+  <section class="bg-white rounded-2xl border border-border-ui shadow-sm overflow-x-auto">
+    <table class="w-full text-sm text-left">
+      <thead class="text-xs uppercase tracking-wider text-slate-var border-b border-border-ui">
+        <tr>
+          <th class="px-6 py-3 font-bold">Código</th>
+          <th class="px-6 py-3 font-bold">Inicio</th>
+          <th class="px-6 py-3 font-bold">Fin</th>
+          <th class="px-6 py-3 font-bold">Estado</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (cargando()) {
+          <tr>
+            <td colspan="4" class="px-6 py-8 text-center text-slate-var">Cargando...</td>
+          </tr>
+        } @else {
+          @for (p of periodos(); track p.id) {
+            <tr class="border-b border-border-ui/60 last:border-0">
+              <td class="px-6 py-3 font-semibold text-carbon-900">{{ p.codigo }}</td>
+              <td class="px-6 py-3 tabular-nums">{{ p.fecha_inicio }}</td>
+              <td class="px-6 py-3 tabular-nums">{{ p.fecha_fin }}</td>
+              <td class="px-6 py-3">
+                <span
+                  class="inline-block px-2.5 py-1 rounded-full text-xs font-semibold"
+                  [class]="
+                    p.habilitado
+                      ? 'bg-operational-teal-tint text-operational-teal-deep'
+                      : 'bg-slate-100 text-slate-var'
+                  "
+                >
+                  {{ p.habilitado ? 'Habilitado' : 'Deshabilitado' }}
+                </span>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="4" class="px-6 py-8 text-center text-slate-var">
+                No hay periodos para mostrar.
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </section>
+</div>

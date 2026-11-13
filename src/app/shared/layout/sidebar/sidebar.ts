@@ -12,6 +12,12 @@ export class Sidebar {
   private readonly router = inject(Router);
   readonly abierto = input(false);
   readonly cerrar = output<void>();
+  get esProfesor(): boolean {
+    return this.authService.esProfesor();
+  }
+  get esMonitor(): boolean {
+    return this.authService.esMonitor();
+  }
    cerrarSesion(): void {
     this.authService.logout();
     this.router.navigate(['/login']);
