@@ -40,3 +40,25 @@ export interface ActualizarTareaRequest {
   horas_invertidas: number;
   observaciones: string | null;
 }
+
+/** Evidencia adjunta a una tarea (RF-06.4, RN-23). La ruta interna no se expone. */
+export interface Adjunto {
+  id: string;
+  tarea_id: string;
+  nombre_archivo: string;
+  tipo_mime: string;
+}
+
+/** Límite y tipos que acepta el backend para las evidencias (10 MB). */
+export const MAX_BYTES_ADJUNTO = 10 * 1024 * 1024;
+export const EXTENSIONES_ADJUNTO = [
+  '.pdf',
+  '.png',
+  '.jpg',
+  '.jpeg',
+  '.txt',
+  '.docx',
+  '.xlsx',
+  '.pptx',
+  '.zip',
+];

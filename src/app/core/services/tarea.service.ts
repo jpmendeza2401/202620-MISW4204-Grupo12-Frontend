@@ -4,6 +4,7 @@ import { Injectable, inject } from '@angular/core';
 import { environment } from '../../../environments/environment';
 import {
   ActualizarTareaRequest,
+  Adjunto,
   CrearTareaRequest,
   EstadoTarea,
   Tarea,
@@ -39,5 +40,26 @@ export class TareaService {
 
   eliminar(id: string) {
     return this.http.delete<void>(`${this.base}/${id}`);
+  }
+
+  // ---------- Evidencias (adjuntos) ----------
+
+  /** Evidencias de una tarea (la propia o, para el profesor, la de su espacio). */
+  listarAdjuntos(tareaId: string) {
+    return this.http.get<Adjunto[] | null>(`${this.base}/${tareaId}/adjuntos`);
+  }
+
+  /** Sube una evidencia; el backend espera el campo multipart `archivo`. */
+  subirAdjunto(tareaId: string, archivo: File) {
+    const datos = new FormData();
+    datos.append('archivo', archivo, archivo.name);
+    return this.http.post<Adjunto>(`${this.base}/${tareaId}/adjuntos`, datos);
+  }
+
+  /** Descarga el contenido de una evidencia. */
+  descargarAdjunto(tareaId: string, adjuntoId: string) {
+    return this.http.get(`${this.base}/${tareaId}/adjuntos/${adjuntoId}/descargar`, {
+      responseType: 'blob',
+    });
   }
 }
