@@ -139,4 +139,81 @@ describe('MisTareas', () => {
     http.expectOne((r) => r.url === `${API}/tareas`).flush([tarea]);
     expect(c.puedeModificar(tarea)).toBe(false);
   });
+
+  // ---------- Evidencias ----------
+
+  const adjunto = {
+    id: 'a1',
+    tarea_id: 't1',
+    nombre_archivo: 'acta.pdf',
+    tipo_mime: 'application/pdf',
+  };
+
+  it('abre las evidencias de una tarea y las lista', () => {
+    cargaInicial();
+    c.alternarAdjuntos(tarea);
+    http.expectOne(`${API}/tareas/t1/adjuntos`).flush([adjunto]);
+    fixture.detectChanges();
+    expect(c.adjuntosDe('t1').length).toBe(1);
+    expect(fixture.nativeElement.textContent).toContain('acta.pdf');
+    expect(fixture.nativeElement.querySelector('input[type="file"]')).not.toBeNull();
+  });
+
+  it('en semanas anteriores muestra evidencias sin permitir adjuntar', () => {
+    cargaInicial();
+    c.moverSemana(-1);
+    http
+      .expectOne((r) => r.url === `${API}/tareas`)
+      .flush([{ ...tarea, semana_inicio: '2000-01-03' }]);
+    c.alternarAdjuntos(tarea);
+    http.expectOne(`${API}/tareas/t1/adjuntos`).flush(null);
+    fixture.detectChanges();
+    expect(c.adjuntosDe('t1')).toEqual([]);
+    expect(fixture.nativeElement.querySelector('input[type="file"]')).toBeNull();
+  });
+
+  it('rechaza en el navegador archivos grandes o de tipo no permitido', () => {
+    cargaInicial();
+    const grande = new File(['x'], 'a.pdf');
+    Object.defineProperty(grande, 'size', { value: 11 * 1024 * 1024 });
+    expect(c.validarArchivo(grande)).toContain('10 MB');
+    expect(c.validarArchivo(new File(['x'], 'virus.exe'))).toContain('no permitido');
+    expect(c.validarArchivo(new File(['x'], 'Acta.PDF'))).toBeNull();
+  });
+
+  it('sube una evidencia y la agrega a la lista', () => {
+    cargaInicial();
+    c.alternarAdjuntos(tarea);
+    http.expectOne(`${API}/tareas/t1/adjuntos`).flush([]);
+    const archivo = new File(['%PDF'], 'acta.pdf');
+    const input = { files: [archivo], value: 'C:/acta.pdf' };
+    c.subirAdjunto(tarea, { target: input } as unknown as Event);
+    const req = http.expectOne(`${API}/tareas/t1/adjuntos`);
+    expect(req.request.method).toBe('POST');
+    req.flush(adjunto);
+    expect(c.adjuntosDe('t1')).toEqual([adjunto]);
+    expect(input.value).toBe('');
+  });
+
+  it('muestra el mensaje del backend si la subida falla', () => {
+    cargaInicial();
+    c.alternarAdjuntos(tarea);
+    http.expectOne(`${API}/tareas/t1/adjuntos`).flush([]);
+    c.subirAdjunto(tarea, {
+      target: { files: [new File(['x'], 'a.txt')], value: '' },
+    } as unknown as Event);
+    http
+      .expectOne(`${API}/tareas/t1/adjuntos`)
+      .flush({ error: 'tipo de archivo no permitido' }, { status: 415, statusText: 'Unsupported' });
+    expect(c.errorAdjuntos()).toBe('tipo de archivo no permitido');
+  });
+
+  it('informa si la descarga falla', () => {
+    cargaInicial();
+    c.descargarAdjunto(tarea, adjunto);
+    http
+      .expectOne(`${API}/tareas/t1/adjuntos/a1/descargar`)
+      .flush(new Blob(['{}']), { status: 404, statusText: 'Not Found' });
+    expect(c.errorAdjuntos()).toBe('La evidencia ya no existe');
+  });
 });
