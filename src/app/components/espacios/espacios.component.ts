@@ -12,6 +12,7 @@ import {
 } from '../../models/espacio.model';
 import { PeriodoService } from '../../core/services/periodo.service';
 import { Periodo } from '../../core/models/models';
+import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-espacios',
@@ -232,6 +233,12 @@ listarPeriodos(): void {
       this.cdr.markForCheck();
     }
   });
+}
+
+private readonly auth = inject(AuthService);
+
+esProfesor(): boolean {
+  return this.auth.esProfesor();
 }
 
 }

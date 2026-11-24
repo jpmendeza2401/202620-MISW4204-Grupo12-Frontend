@@ -17,6 +17,13 @@ export const routes: Routes = [
       import('./shared/layout/main-layout/main-layout').then((m) => m.MainLayout),
     children: [
       {
+        path: 'periodos',
+        loadComponent: () =>
+          import('./features/periodos/periodo-list/periodo-list').then(
+            (m) => m.PeriodoList
+          ),
+      },
+      {
         path: 'crear-periodo',
         loadComponent: () =>
           import('./features/periodos/periodo-form/periodo-form').then(
@@ -90,7 +97,7 @@ export const routes: Routes = [
       {
         path: '',
         pathMatch: 'full',
-        redirectTo: 'crear-periodo',
+        redirectTo: 'periodos',
       }
     ],
   },

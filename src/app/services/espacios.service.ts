@@ -1,9 +1,9 @@
-
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 import { environment } from '../../environments/environment';
+import { AuthService } from '../core/services/auth.service';
 
 import {
   EspacioAcademico,
@@ -16,13 +16,21 @@ import {
 export class EspaciosService {
 
   private readonly http = inject(HttpClient);
+  private readonly auth = inject(AuthService);
 
   private readonly apiUrl = `${environment.apiUrl}/espacios`;
 
   /**
-   * Consultar espacios activos del profesor autenticado.
+   * Consultar espacios activos según el perfil autenticado.
    */
   listar(): Observable<EspacioAcademico[]> {
+
+    if (this.auth.esMonitor()) {
+      return this.http.get<EspacioAcademico[]>(
+        `${this.apiUrl}/vinculados`
+      );
+    }
+
     return this.http.get<EspacioAcademico[]>(this.apiUrl);
   }
 
@@ -47,9 +55,16 @@ export class EspaciosService {
   }
 
   /**
-   * Consultar espacios cerrados del profesor.
+   * Consultar espacios cerrados según el perfil autenticado.
    */
   listarCerrados(): Observable<EspacioAcademico[]> {
+
+    if (this.auth.esMonitor()) {
+      return this.http.get<EspacioAcademico[]>(
+        `${this.apiUrl}/vinculados/cerrados`
+      );
+    }
+
     return this.http.get<EspacioAcademico[]>(
       `${this.apiUrl}/cerrados`
     );

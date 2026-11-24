@@ -2,7 +2,14 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 
-import { ESTADOS_TAREA, EstadoTarea, Tarea } from '../../../core/models/tarea.models';
+import {
+  Adjunto,
+  ESTADOS_TAREA,
+  EXTENSIONES_ADJUNTO,
+  EstadoTarea,
+  MAX_BYTES_ADJUNTO,
+  Tarea,
+} from '../../../core/models/tarea.models';
 import { VinculacionPropia } from '../../../core/models/reporte.models';
 import { ReporteService } from '../../../core/services/reporte.service';
 import { TareaService } from '../../../core/services/tarea.service';
@@ -24,6 +31,7 @@ export class MisTareas implements OnInit {
   private readonly fb = inject(FormBuilder);
 
   protected readonly estados = ESTADOS_TAREA;
+  protected readonly extensionesAdjunto = EXTENSIONES_ADJUNTO.join(',');
 
   /** Lunes de la semana en curso (YYYY-MM-DD). */
   protected readonly semanaActual = aISO(lunesDe(new Date()));
@@ -35,6 +43,13 @@ export class MisTareas implements OnInit {
   protected readonly cargando = signal(false);
   protected readonly error = signal<string | null>(null);
   protected readonly exito = signal<string | null>(null);
+
+  /** Evidencias: id de la tarea con el panel abierto y adjuntos cargados por tarea. */
+  protected readonly adjuntosAbiertos = signal<string | null>(null);
+  protected readonly adjuntos = signal<Record<string, Adjunto[]>>({});
+  protected readonly cargandoAdjuntos = signal(false);
+  protected readonly subiendoAdjunto = signal(false);
+  protected readonly errorAdjuntos = signal<string | null>(null);
 
   /** Formulario: null = cerrado, 'nueva' = crear, o el id de la tarea en edición. */
   protected readonly editando = signal<'nueva' | string | null>(null);
@@ -98,6 +113,7 @@ export class MisTareas implements OnInit {
 
   protected cargar(): void {
     if (!this.vinculacionId()) return;
+    this.cerrarAdjuntos();
     this.cargando.set(true);
     this.error.set(null);
     this.tareasApi.listar(this.vinculacionId(), this.semana()).subscribe({
@@ -220,6 +236,100 @@ export class MisTareas implements OnInit {
     });
   }
 
+  // ---------- Evidencias (RF-06.4) ----------
+
+  protected alternarAdjuntos(t: Tarea): void {
+    if (this.adjuntosAbiertos() === t.id) {
+      this.cerrarAdjuntos();
+      return;
+    }
+    this.adjuntosAbiertos.set(t.id);
+    this.errorAdjuntos.set(null);
+    this.cargarAdjuntos(t.id);
+  }
+
+  protected cerrarAdjuntos(): void {
+    this.adjuntosAbiertos.set(null);
+    this.errorAdjuntos.set(null);
+  }
+
+  protected adjuntosDe(tareaId: string): Adjunto[] {
+    return this.adjuntos()[tareaId] ?? [];
+  }
+
+  private cargarAdjuntos(tareaId: string): void {
+    this.cargandoAdjuntos.set(true);
+    this.tareasApi.listarAdjuntos(tareaId).subscribe({
+      next: (lista) => {
+        this.adjuntos.update((m) => ({ ...m, [tareaId]: lista ?? [] }));
+        this.cargandoAdjuntos.set(false);
+      },
+      error: (err: HttpErrorResponse) => {
+        this.errorAdjuntos.set(this.mensaje(err));
+        this.cargandoAdjuntos.set(false);
+      },
+    });
+  }
+
+  /** Valida en el navegador lo mismo que el backend: tamaño (10 MB) y extensión. */
+  protected validarArchivo(archivo: File): string | null {
+    if (archivo.size === 0) return 'El archivo está vacío';
+    if (archivo.size > MAX_BYTES_ADJUNTO) return 'El archivo supera 10 MB';
+    const nombre = archivo.name.toLowerCase();
+    if (!EXTENSIONES_ADJUNTO.some((ext) => nombre.endsWith(ext))) {
+      return 'Tipo de archivo no permitido (pdf, png, jpg, txt, docx, xlsx, pptx, zip)';
+    }
+    return null;
+  }
+
+  protected subirAdjunto(t: Tarea, evento: Event): void {
+    const input = evento.target as HTMLInputElement;
+    const archivo = input.files?.[0];
+    input.value = ''; // permite volver a elegir el mismo archivo
+    if (!archivo) return;
+
+    const invalido = this.validarArchivo(archivo);
+    if (invalido) {
+      this.errorAdjuntos.set(invalido);
+      return;
+    }
+    this.subiendoAdjunto.set(true);
+    this.errorAdjuntos.set(null);
+    this.tareasApi.subirAdjunto(t.id, archivo).subscribe({
+      next: (adjunto) => {
+        this.subiendoAdjunto.set(false);
+        this.adjuntos.update((m) => ({ ...m, [t.id]: [...(m[t.id] ?? []), adjunto] }));
+      },
+      error: (err: HttpErrorResponse) => {
+        this.subiendoAdjunto.set(false);
+        this.errorAdjuntos.set(this.mensaje(err));
+      },
+    });
+  }
+
+  protected descargarAdjunto(t: Tarea, a: Adjunto): void {
+    this.errorAdjuntos.set(null);
+    this.tareasApi.descargarAdjunto(t.id, a.id).subscribe({
+      next: (blob) => {
+        const url = URL.createObjectURL(blob);
+        const enlace = document.createElement('a');
+        enlace.href = url;
+        enlace.download = a.nombre_archivo;
+        enlace.click();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      },
+      // En descargas el cuerpo del error llega como Blob, no como JSON.
+      error: (err: HttpErrorResponse) =>
+        this.errorAdjuntos.set(
+          err.status === 0
+            ? 'No se pudo conectar con el servidor'
+            : err.status === 404
+              ? 'La evidencia ya no existe'
+              : 'No se pudo descargar la evidencia',
+        ),
+    });
+  }
+
   // ---------- Presentación ----------
 
   protected etiquetaEstado(estado: EstadoTarea): string {
@@ -234,6 +344,9 @@ export class MisTareas implements OnInit {
 
   private mensaje(err: HttpErrorResponse): string {
     if (err.status === 0) return 'No se pudo conectar con el servidor';
-    return err.error?.error ?? 'Ocurrió un error al procesar la solicitud';
+    if (typeof err.error?.error === 'string') return err.error.error;
+    if (err.status === 403) return 'No tienes permiso para esta acción';
+    if (err.status === 413) return 'El archivo supera 10 MB';
+    return 'Ocurrió un error al procesar la solicitud';
   }
 }

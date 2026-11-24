@@ -102,4 +102,37 @@ describe('TareaService', () => {
     expect(req.request.method).toBe('DELETE');
     req.flush(null, { status: 204, statusText: 'No Content' });
   });
+
+  it('lista las evidencias de una tarea', () => {
+    service.listarAdjuntos('t1').subscribe((a) => expect(a?.length).toBe(1));
+    const req = http.expectOne(`${BASE}/t1/adjuntos`);
+    expect(req.request.method).toBe('GET');
+    req.flush([
+      { id: 'a1', tarea_id: 't1', nombre_archivo: 'acta.pdf', tipo_mime: 'application/pdf' },
+    ]);
+  });
+
+  it('sube una evidencia como multipart en el campo archivo', () => {
+    const archivo = new File(['%PDF-1.4'], 'acta.pdf', { type: 'application/pdf' });
+    service.subirAdjunto('t1', archivo).subscribe();
+    const req = http.expectOne(`${BASE}/t1/adjuntos`);
+    expect(req.request.method).toBe('POST');
+    const cuerpo = req.request.body as FormData;
+    expect(cuerpo instanceof FormData).toBe(true);
+    expect((cuerpo.get('archivo') as File).name).toBe('acta.pdf');
+    req.flush({
+      id: 'a1',
+      tarea_id: 't1',
+      nombre_archivo: 'acta.pdf',
+      tipo_mime: 'application/pdf',
+    });
+  });
+
+  it('descarga una evidencia como blob', () => {
+    service.descargarAdjunto('t1', 'a1').subscribe((b) => expect(b instanceof Blob).toBe(true));
+    const req = http.expectOne(`${BASE}/t1/adjuntos/a1/descargar`);
+    expect(req.request.method).toBe('GET');
+    expect(req.request.responseType).toBe('blob');
+    req.flush(new Blob(['x']));
+  });
 });

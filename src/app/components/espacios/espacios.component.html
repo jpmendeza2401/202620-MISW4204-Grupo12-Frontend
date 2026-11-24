@@ -17,7 +17,7 @@
     </div>
 
     <button
-      *ngIf="!mostrarFormulario && vista === 'activos'"
+      *ngIf="!mostrarFormulario && vista === 'activos' && esProfesor()"
       class="btn-primary"
       (click)="abrirFormulario()">
       <span class="material-symbols-outlined">add</span>
@@ -394,7 +394,7 @@
           </span>
 
           <button
-            *ngIf="vista === 'activos'"
+            *ngIf="vista === 'activos' && esProfesor()"
             class="btn-close-space"
             (click)="cerrarEspacio(espacio)">
             <span class="material-symbols-outlined">lock</span>

@@ -27,3 +27,9 @@ export interface PeriodoCreate {
 export interface Periodo extends PeriodoCreate {
   id: string;
 }
+
+export interface PeriodoFiltro {
+  codigo?: string;
+  habilitado?: boolean;
+  vigente?: boolean;
+}
