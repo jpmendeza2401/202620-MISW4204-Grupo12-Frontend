@@ -1,5 +1,5 @@
 export const environment = {
   production: true,
-  apiUrl: 'http://136.82.168.247/api/v1',
+  apiUrl: 'https://backend-prod-462101163088.us-east1.run.app/api/v1',
 };
 
