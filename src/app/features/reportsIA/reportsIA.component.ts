@@ -170,9 +170,13 @@ export class ReportsIAComponent implements OnInit {
     }
 
     this.descargandoId = reporte.id;
+    this.cdr.markForCheck();
 
     this.reporteService.descargarPdfReporteSemanal(reporte.id)
-      .pipe(finalize(() => this.descargandoId = null))
+      .pipe(finalize(() => {
+        this.descargandoId = null;
+        this.cdr.markForCheck();
+      }))
       .subscribe({
         next: archivo => {
           const url = window.URL.createObjectURL(archivo);
