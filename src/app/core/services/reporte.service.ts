@@ -112,7 +112,7 @@ export class ReporteService {
 
   solicitarReporteSemanal(datos: CrearReporteRequest) {
     return this.http.post<CrearReporteResponse>(
-      `${this.base}/reportes/semanales`,
+      `${this.base}/reportes/semanales/lote`,
       datos
     );
   }
